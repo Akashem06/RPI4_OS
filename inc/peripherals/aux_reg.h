@@ -20,4 +20,5 @@ typedef struct {
     reg32 mu_baudrate;
 } AuxRegisters;
 
-#define AUX_REGS (( struct AuxRegisters * )(PBASE + 0x00215000))
+#define AUX_BASE (PBASE + 0x00215000)
+#define AUX_REGS (( volatile AuxRegisters * )(AUX_BASE))

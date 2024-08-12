@@ -1,6 +1,6 @@
 #include "gpio.h"
 
-void gpio_set_func(u8 pin_number, GpioFunctions func) {
+void gpio_set_function(u8 pin_number, GpioFunctions func) {
     u8 bit_start = (pin_number * 3) % 30;
     u8 reg = pin_number / 10;
     u32 selector = GPIO_REGS->function_select[reg];

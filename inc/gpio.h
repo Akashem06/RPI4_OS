@@ -15,5 +15,5 @@ typedef enum {
     GF_ALT5 = 2
 } GpioFunctions;
 
-void gpio_set_func(u8 pin_number, GpioFunctions func);
+void gpio_set_function(u8 pin_number, GpioFunctions func);
 void gpio_enable(u8 pin_number);

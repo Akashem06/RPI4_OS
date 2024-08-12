@@ -28,4 +28,4 @@ typedef struct {
 } GpioRegisters;
 
 #define GPIO_BASE (PBASE + 0x00200000) // GPIO register base address
-#define GPIO_REGS (( volatile GpioRegisters * )GPIO_BASE)
+#define GPIO_REGS (( volatile GpioRegisters * )(GPIO_BASE))
