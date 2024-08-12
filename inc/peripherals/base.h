@@ -3,6 +3,7 @@
 #if RPI_VERSION == 3
 #define PBASE 0x3F000000
 
+// Low peripheral mode address
 #elif RPI_VERSION == 4
 #define PBASE 0xFE000000
 
