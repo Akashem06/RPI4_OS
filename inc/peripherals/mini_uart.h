@@ -7,7 +7,7 @@
 #define TX_PIN 14
 #define RX_PIN 15
 
-void uart_init();
-char uart_receive();
-void uart_transmit(char c);
-void uart_transmit_string(char *message);
+void mini_uart_init();
+char mini_uart_receive();
+void mini_uart_transmit(char c);
+void mini_uart_transmit_string(char *message);

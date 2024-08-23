@@ -16,8 +16,24 @@ void gpio_set_function(u8 pin_number, GpioFunctions func) {
 void gpio_enable(u8 pin_number) {
     GPIO_REGS->pupd_enable = 0;
     delay(150);
-    GPIO_REGS->pupd_enable_clocks[ pin_number / 32 ] = 1 << (pin_number % 32);
+    GPIO_REGS->pupd_enable_clocks[ pin_number / 32 ] |= 1 << (pin_number % 32);
     delay(150);
     GPIO_REGS->pupd_enable = 0;
-    GPIO_REGS->pupd_enable_clocks[ pin_number / 32 ] = 0;
+    GPIO_REGS->pupd_enable_clocks[ pin_number / 32 ] &= ~(1 << (pin_number % 32));
+}
+
+void gpio_set_high(u8 pin_number) {
+    if (pin_number < 32) {
+        GPIO_REGS->output_set.data[0] = (1 << pin_number);
+    } else {
+        GPIO_REGS->output_set.data[1] = (1 << (pin_number - 32));
+    }
+}
+
+void gpio_set_low(u8 pin_number) {
+    if (pin_number < 32) {
+        GPIO_REGS->output_clear.data[0] = (1 << pin_number);
+    } else {
+        GPIO_REGS->output_clear.data[1] = (1 << (pin_number - 32));
+    }
 }

@@ -1,7 +1,7 @@
 RPI_VERSION ?= 4
 ARMGNU ?= aarch64-linux-gnu
 
-BOOTMNT ?= /mnt/e
+BOOTMNT ?= /mnt/d
 
 C_FLAGS = -DRPI_VERSION=$(RPI_VERSION) -Wall -nostdlib -nostartfiles -ffreestanding -Iinc -mgeneral-regs-only
 ASM_FLAGS = -Iinc
@@ -32,17 +32,27 @@ OBJ_FILES += $(ASM_FILES:$(SRC_DIR)/%.S=$(OBJ_DIR)/%_s.o)
 DEP_FILES = $(OBJ_FILES:$(OBJ_DIR)/%.o=$(DEP_DIR)/%.d)
 -include $(DEP_FILES)
 
-$(BUILD_DIR)/kernel8.img: $(SRC_DIR)/linker.ld $(OBJ_FILES)
+$(BUILD_DIR)/kernel8.img: linker.ld $(OBJ_FILES)
 	@echo ""
 	@echo "Building for RPI $(value RPI_VERSION)"
 	@echo "Deploying to $(value BOOTMNT)"
 	@echo ""
-	$(ARMGNU)-ld -T $(SRC_DIR)/linker.ld -o $(BUILD_DIR)/kernel8.elf $(OBJ_FILES)
+	$(ARMGNU)-ld -T linker.ld -o $(BUILD_DIR)/kernel8.elf $(OBJ_FILES)
 	$(ARMGNU)-objcopy $(BUILD_DIR)/kernel8.elf -O binary $(BUILD_DIR)/kernel8.img
-# ifeq ($(RPI_VERSION), 4)
-# 	cp $(BUILD_DIR)/kernel8.img $(BOOTMNT)/kernel8-rpi4.img
-# else
-# 	cp $(BUILD_DIR)/kernel8.img $(BOOTMNT)/
-# endif
-# 	cp config.txt $(BOOTMNT)/
-# 	sync
+ifeq ($(RPI_VERSION), 4)
+	# cp $(BUILD_DIR)/kernel8.img $(BOOTMNT)/kernel8-rpi4.img
+else
+	# cp $(BUILD_DIR)/kernel8.img $(BOOTMNT)/
+endif
+	# cp config.txt $(BOOTMNT)/
+	sync
+
+armstub/build/armstub_s.o: armstub/src/armstub.S
+	mkdir -p $(@D)
+	$(ARMGNU)-gcc $(C_FLAGS) -MMD -c $< -o $@
+
+armstub: armstub/build/armstub_s.o
+	$(ARMGNU)-ld --section-start=.text=0 -o armstub/build/armstub.elf armstub/build/armstub_s.o
+	$(ARMGNU)-objcopy armstub/build/armstub.elf -O binary armstub/build/armstub-new.bin
+	# cp armstub-new.bin $(BOOTMNT)/
+	# sync

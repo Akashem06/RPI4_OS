@@ -1,30 +1,30 @@
 #include "peripherals/mini_uart.h"
 #include "gpio.h"
 
-void uart_transmit(char c) {
+void mini_uart_transmit(char c) {
     while(!(AUX_REGS->mu_lsr & 0x20)); // Checks if transmitter empty 
     
     AUX_REGS->mu_io = c;
 }
 
-void uart_transmit_string(char *message) {
-    while (*message) {
-        if (*message == '\n') {
-            uart_transmit('\r');
+void mini_uart_transmit_string(char *str) {
+    while (*str) {
+        if (*str == '\n') {
+            mini_uart_transmit('\r');
         }
 
-        uart_transmit(*message); // Send char at current address
-        message++; // Increment memory address, going to next char
+        mini_uart_transmit(*str); // Send char at current address
+        str++; // Increment memory address, going to next char
     }
 }
 
-char uart_receive() {
+char mini_uart_receive() {
     while(!(AUX_REGS->mu_lsr & 0x1)); // Checks if transmitter empty 
     
     return AUX_REGS->mu_io & 0xFF;
 }
 
-void uart_init() {
+void mini_uart_init() {
     gpio_set_function(TX_PIN, GF_ALT5);
     gpio_set_function(RX_PIN, GF_ALT5);
 
@@ -47,7 +47,7 @@ void uart_init() {
 
     AUX_REGS->mu_control = 3; // Enables transmitter and receiver for UAR
 
-    uart_transmit('\r');
-    uart_transmit('\r');
-    uart_transmit('\n');
+    mini_uart_transmit('\r');
+    mini_uart_transmit('\r');
+    mini_uart_transmit('\n');
 }

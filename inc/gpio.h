@@ -17,3 +17,5 @@ typedef enum {
 
 void gpio_set_function(u8 pin_number, GpioFunctions func);
 void gpio_enable(u8 pin_number);
+void gpio_set_high(u8 pin_number);
+void gpio_set_low(u8 pin_number);

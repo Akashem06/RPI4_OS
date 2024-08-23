@@ -1,4 +1,5 @@
 #include "mm.h"
+#include "sysregs.h"
 
 // Specifies that this is .text.boot, the first item in the linkerscript and image
 // Ensures that this file runs first, specifically the start function
@@ -18,6 +19,25 @@ _start:
     b proc_hang // Program hangs
 
 master:
+    // Look at sysregs.h for more details!
+    ldr    x0, =SCTLR_VALUE_MMU_DISABLED
+    msr    sctlr_el1, x0        
+
+    ldr    x0, =HCR_VALUE
+    msr    hcr_el2, x0
+
+    ldr    x0, =SCR_VALUE
+    msr    scr_el3, x0
+
+    ldr    x0, =SPSR_VALUE
+    msr    spsr_el3, x0
+
+    adr    x0, el1_entry        
+    msr    elr_el3, x0
+
+    eret
+
+el1_entry:
     // Cleans the .bss section, setting all values to 0 using memzero
     adr x0, bss_begin // adr calculates the address of a memory location to store it
     adr x1, bss_end

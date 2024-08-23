@@ -1,19 +1,27 @@
 #include "common.h"
-#include "peripherals/mini_uart.h"
+#include "gpio.h"
+#include "log.h"
+#include "utils.h"
+#include "peripherals/uart.h"
 
-void kernal_main() {
-    uart_init();
-    uart_transmit_string("Aryan's bare-metal OS booting up. . . \n");
+UartSettings settings = {
+    .uart = UART0,
+    .tx = 14,
+    .rx = 15,
+};
 
-    #if RPI_VERSION == 3
-    uart_transmit_string("\tBoard: Raspberry Pi 3\n");
-    #elif RPI_VERSION == 4
-    uart_transmit_string("\tBoard: Raspberry Pi 4\n");
-    #endif
+void kernel_main() {
+    uart_init(&settings);
+    gpio_set_function(17, GF_OUTPUT);
 
-    uart_transmit_string("Done\n");
+    int el = get_el();
 
     while (1) {
-        uart_transmit(uart_receive());
+        gpio_set_high(17);
+        delay(1000000);
+        gpio_set_low(17);
+        delay(1000000);
+        // mini_uart_transmit(mini_uart_receive());
+        log("Hello World! %d\r\n", el);
     }
 }
