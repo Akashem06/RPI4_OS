@@ -48,3 +48,4 @@ void uart_init(UartSettings *settings);
 void uart_transmit(char c);
 void uart_transmit_string(char *str);
 char uart_receive();
+void handle_uart_irq();

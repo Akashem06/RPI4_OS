@@ -33,7 +33,7 @@ void mini_uart_init() {
 
     AUX_REGS->irq_enables = 1; // Enables ISR for all peripherals
     AUX_REGS->mu_control = 0; // Disables UART transmitter and receiver
-    AUX_REGS->mu_ier = 0; // Disables ISR's for Mini UART
+    AUX_REGS->mu_ier = 2; // Enables ISR's for Mini UART
     AUX_REGS->mu_lcr = 3; // Sets UART data format to 8bit messages
     AUX_REGS->mu_mcr = 0; // Disables features like RTS (Request to Send) and CTS (Clear to Send)
 

@@ -7,6 +7,19 @@ char uart_output_queue[UART_MAX_QUEUE];
 u16 uart_output_queue_write = 0;
 u16 uart_output_queue_read = 0;
 
+void handle_uart_irq() {
+    if (config->uart->fr & (1 << 4)) {
+        // UART FIFO is empty, no data to read
+        return;
+    }
+    
+    while (!(config->uart->fr & (1 << 4))) {
+        // Read data from UART
+        char c = config->uart->dr & 0xFF;
+        uart_transmit(c);  // Handle the received character
+    }
+}
+
 void uart_transmit(char c) {
     while (config->uart->fr & (1 << 5)); // Wait until TX FIFO is not full
     config->uart->dr = c;
@@ -53,6 +66,6 @@ void uart_init(UartSettings *settings) {
     config->uart->fbrd = 3;
 
     config->uart->lcrh = (1 << 4) | (1 << 5) | (1 << 6); // 8 bits, no parity, 1 stop bit
-    config->uart->imsc = 0;
+    config->uart->imsc = (1 << 4); // Sets RX ISR
     config->uart->cr = (1 << 0) | (1 << 8) | (1 << 9); // Enable UART, TX, and RX. TODO: Add more functions? Loopback?
 }
