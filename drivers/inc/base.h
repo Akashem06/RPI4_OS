@@ -12,3 +12,5 @@
 #error "NO RPI_VERSION DEFINED"
 
 #endif
+
+#define CORE_CLOCK_SPEED 1500000000

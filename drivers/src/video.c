@@ -151,6 +151,10 @@ void video_draw_pixel(u32 x, u32 y, u32 color) {
     } else {
         DRAWBUFFER[pixel_offset++] = (color & 0xFF);
     }
+
+    if (use_dma) {
+        video_dma();
+    }
 }
 
 void video_draw_rectangle(u32 x_start, u32 y_start, u32 width, u32 height, u32 color) {

@@ -26,7 +26,7 @@
 
 // Restores the state of the cpu registers (x0 to x30) from the stack
 // ldp loads a pair of two registers from memory
-// 1 register is 64 bits (8 bytes), so each ldp increments by 16 bytes
+// 1 register is 64 bits (8 bytes), so each ldp increments by 16 bytes (2 Registers at a time)
 .macro kernel_exit
     ldp x0, x1, [sp, #16 * 0]
     ldp x2, x3, [sp, #16 * 1]
