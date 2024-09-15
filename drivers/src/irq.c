@@ -1,10 +1,11 @@
 #include "utils.h"
 #include "log.h"
 #include "entry.h"
-#include "peripherals/irq.h"
-#include "peripherals/aux_reg.h"
-#include "peripherals/mini_uart.h"
-#include "peripherals/uart.h"
+#include "irq.h"
+#include "aux_reg.h"
+#include "mini_uart.h"
+#include "uart.h"
+#include "timer.h"
 #include "gpio.h"
 
 const char entry_error_messages[16][32] = {
@@ -35,12 +36,12 @@ void show_invalid_entry_message(u32 type, u64 esr, u64 address) {
 
 void enable_interrupt_controller() {
     #if RPI_VERSION == 4
-        IRQ_REGS->irq0_enable_0 = AUX_IRQ;
-        IRQ_REGS->irq0_enable_1 = UART_IRQ;
+        IRQ_REGS->irq0_enable_0 |= AUX_IRQ;
+        IRQ_REGS->irq0_enable_1 |= UART_IRQ;
     #endif
 
     #if RPI_VERSION == 3
-        IRQ_REGS->irq0_enable_1 = AUX_IRQ;
+        IRQ_REGS->irq0_enable_1 |= AUX_IRQ;
     #endif
 }
 
@@ -75,12 +76,12 @@ void handle_irq() {
 
         if (irq_low & SYS_TIMER_IRQ_1) {
             irq_low &= ~SYS_TIMER_IRQ_1;
-            // handle_timer_1();
+            handle_timer_irq();
         }
 
         if (irq_low & SYS_TIMER_IRQ_3) {
             irq_low &= ~SYS_TIMER_IRQ_3;
-            // handle_timer_3();
+            handle_timer_irq();
         }
     }
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "common.h"
-#include "peripherals/base.h"
+#include "base.h"
 
 typedef struct {
     reg32 irq_status;

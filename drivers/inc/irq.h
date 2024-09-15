@@ -1,6 +1,6 @@
 #pragma once
 
-#include "peripherals/base.h"
+#include "base.h"
 #include "common.h"
 
 enum videocore_irqs_low {
@@ -53,3 +53,8 @@ struct arm_irq_regs_rpi3 {
 #endif
 
 #define IRQ_REGS ((IRQRegisters *)(PBASE + 0x0000B200))
+
+void irq_init_vectors();
+void irq_enable();
+void irq_disable();
+void enable_interrupt_controller();

@@ -2,6 +2,7 @@
 
 #include "common.h"
 #include "base.h"
+#include <stdbool.h>
 
 typedef struct {
     reg32 dr;        // Data Register
@@ -49,3 +50,4 @@ void uart_transmit(char c);
 void uart_transmit_string(char *str);
 char uart_receive();
 void handle_uart_irq();
+bool uart_read_ready();

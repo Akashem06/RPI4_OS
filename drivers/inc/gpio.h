@@ -1,7 +1,19 @@
 #pragma once
 
 #include "common.h"
-#include "peripherals/base.h"
+#include "base.h"
+#include "utils.h"
+
+typedef enum {
+    GF_INPUT,
+    GF_OUTPUT,
+    GF_ALT0 = 4,
+    GF_ALT1,
+    GF_ALT2,
+    GF_ALT3,
+    GF_ALT4 = 3,
+    GF_ALT5 = 2
+} GpioFunctions;
 
 typedef struct {
     reg32 reserved;
@@ -26,6 +38,11 @@ typedef struct {
     reg32 pupd_enable;
     reg32 pupd_enable_clocks[2];
 } GpioRegisters;
+
+void gpio_set_function(u8 pin_number, GpioFunctions func);
+void gpio_enable(u8 pin_number);
+void gpio_set_high(u8 pin_number);
+void gpio_set_low(u8 pin_number);
 
 #define GPIO_BASE (PBASE + 0x00200000) // GPIO register base address
 #define GPIO_REGS (( volatile GpioRegisters * )(GPIO_BASE))

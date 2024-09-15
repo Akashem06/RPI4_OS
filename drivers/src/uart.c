@@ -1,4 +1,4 @@
-#include "peripherals/uart.h"
+#include "uart.h"
 #include "gpio.h"
 
 UartSettings *config;
@@ -7,17 +7,8 @@ char uart_output_queue[UART_MAX_QUEUE];
 u16 uart_output_queue_write = 0;
 u16 uart_output_queue_read = 0;
 
-void handle_uart_irq() {
-    if (config->uart->fr & (1 << 4)) {
-        // UART FIFO is empty, no data to read
-        return;
-    }
-    
-    while (!(config->uart->fr & (1 << 4))) {
-        // Read data from UART
-        char c = config->uart->dr & 0xFF;
-        uart_transmit(c);  // Handle the received character
-    }
+bool uart_read_ready()  {
+    return !(config->uart->fr & (1 << 4));
 }
 
 void uart_transmit(char c) {

@@ -1,8 +1,8 @@
 #pragma once
 
 #include "common.h"
-#include "peripherals/base.h"
-#include "peripherals/aux_reg.h"
+#include "base.h"
+#include "aux_reg.h"
 
 #define TX_PIN 14
 #define RX_PIN 15

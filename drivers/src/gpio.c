@@ -9,7 +9,6 @@ void gpio_set_function(u8 pin_number, GpioFunctions func) {
     selector |= ( func << bit_start );
 
     GPIO_REGS->function_select[reg] = selector;
-    
 }
 
 // Page 101 of BCM2835 ARM Peripheral datasheet
@@ -24,16 +23,16 @@ void gpio_enable(u8 pin_number) {
 
 void gpio_set_high(u8 pin_number) {
     if (pin_number < 32) {
-        GPIO_REGS->output_set.data[0] = (1 << pin_number);
+        GPIO_REGS->output_set.data[0] |= (1 << pin_number);
     } else {
-        GPIO_REGS->output_set.data[1] = (1 << (pin_number - 32));
+        GPIO_REGS->output_set.data[1] |= (1 << (pin_number - 32));
     }
 }
 
 void gpio_set_low(u8 pin_number) {
     if (pin_number < 32) {
-        GPIO_REGS->output_clear.data[0] = (1 << pin_number);
+        GPIO_REGS->output_clear.data[0] |= (1 << pin_number);
     } else {
-        GPIO_REGS->output_clear.data[1] = (1 << (pin_number - 32));
+        GPIO_REGS->output_clear.data[1] |= (1 << (pin_number - 32));
     }
 }
