@@ -30,8 +30,19 @@ const char entry_error_messages[16][32] = {
 	"ERROR_INVALID_EL0_32"	
 };
 
-void show_invalid_entry_message(u32 type, u64 esr, u64 address) {
-    log("ERROR CAUGHT: %s - %d\n", entry_error_messages[type], type);
+void show_invalid_entry_message(u32 type, u64 esr, u64 address, u64 fault_addr_reg, u64 stack_pointer) {
+    log("ERROR CAUGHT: %s - %d. ESR: %d Address: %d\r\n", entry_error_messages[type], type, esr, address);
+    for (int i = 0; i < CLOCK_HZ; i++) {
+        __asm("NOP");
+    }
+    log("Fault addr_reg: %d, stack pointer: %d\r\n", fault_addr_reg, stack_pointer);
+}
+
+void print_register(u64 reg_val, u64 reg_num) {
+    log("REG_NUMBER: %d, VALUE: %d\n\r", reg_num, reg_val);
+    for (int i = 0; i < CLOCK_HZ; i++) {
+        __asm("NOP");
+    }
 }
 
 void enable_interrupt_controller() {

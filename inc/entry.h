@@ -36,3 +36,7 @@
 #define ERROR_INVALID_EL0_32    15
 
 #define S_FRAME_SIZE            256
+
+#ifndef __ASSEMBLER__
+void cpu_new_task(void);
+#endif

@@ -8,3 +8,7 @@ typedef uint32_t u32;
 typedef uint64_t u64;
 
 typedef volatile u32 reg32;
+typedef volatile u64 reg64;
+
+#define max(x, y) (x > y? x : y)
+#define min(x, y) (x < y? x : y)

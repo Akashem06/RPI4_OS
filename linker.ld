@@ -1,16 +1,27 @@
 SECTIONS
 {
-    .text.boot : { *(.text.boot) }
-    .text :  { *(.text) }
-    .rodata : { *(.rodata) }
-    .data : { *(.data) }
-    . = ALIGN(0x8);
+    . = 0x0;
+    __code_start = .;
+    .text.boot : { 
+        *(.text.boot) 
+    }
+    __text_start = .;
+    .text : { 
+        *(.text) 
+    }
+    .rodata : { 
+        *(.rodata) 
+    }
+    .data : ALIGN(4096) {
+        __data_start = .;
+        *(.data)
+        *(.data.*)
+        . = ALIGN(4096);
+        __data_end = .;
+    }
     bss_begin = .;
-    .bss : { *(.bss*) } 
+    .bss : { 
+        *(.bss*) 
+    } 
     bss_end = .;
 }
-
-/* The RPI loads our .img file into memory and executes from the begining of the file */
-/* This is why we want the .text.boot section first, the OS startup code is located here. */
-/* .text, .rodata and .data sections are kernal compiled instructions that aren't important */
-/* .bss is unitialized values that are all set to 0 */

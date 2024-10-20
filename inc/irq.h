@@ -57,4 +57,6 @@ struct arm_irq_regs_rpi3 {
 void irq_init_vectors();
 void irq_enable();
 void irq_disable();
+void irq_save_flags(u64 flags);
+void irq_restore_flags(u64 flags);
 void enable_interrupt_controller();

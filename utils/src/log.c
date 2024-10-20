@@ -30,6 +30,33 @@ void log_format(const char *format, va_list args) {
                     }
                     break;
                 }
+                case 'l': {
+                    format++;
+                    long value = va_arg(args, long);
+                    char buffer[20];
+                    int i = 0;
+                    u8 is_negative = 0;
+
+                    if (value < 0) {
+                        is_negative = 1;
+                        value = -value;
+                    }
+
+                    do {
+                        buffer[i++] = (value % 10) + '0';
+                        value /= 10;
+                    } while (value > 0);
+
+                    if (is_negative) {
+                        buffer[i++] = '-';
+                    }
+
+                    while (--i >= 0) {
+                        uart_transmit(buffer[i]);
+                    }
+                    break;
+                }
+
                 case 's': {
                     char *str = va_arg(args, char*);
                     while (*str) {
@@ -95,6 +122,36 @@ int log_sprint(char *buffer, const char *format, ...) {
                         while (i--) {
                             *buf_ptr++ = temp[i];
                             written++;
+                        }
+                    }
+                    break;
+                }
+                case 'l': {
+                    fmt_ptr++;
+                    if (*fmt_ptr == 'd') {
+                        long num = va_arg(args, long);
+                        char temp[20];
+                        int i = 0;
+
+                        if (num < 0) {
+                            *buf_ptr++ = '-';
+                            written++;
+                            num = -num;
+                        }
+
+                        if (num == 0) {
+                            *buf_ptr++ = '0';
+                            written++;
+                        } else {
+                            while (num) {
+                                temp[i++] = (num % 10) + '0';
+                                num /= 10;
+                            }
+
+                            while (i--) {
+                                *buf_ptr++ = temp[i];
+                                written++;
+                            }
                         }
                     }
                     break;

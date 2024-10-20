@@ -22,3 +22,13 @@ irq_enable:
 irq_disable:
     msr daifset, #2 // Sets bit 2, disabling IRQs
     ret
+
+.global irq_save_flags
+irq_save_flags:
+    mrs x0, daif
+    ret
+
+.global irq_restore_flags
+irq_restore_flags:
+    msr daif, x0
+    ret
