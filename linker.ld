@@ -1,24 +1,34 @@
 SECTIONS
 {
-    . = 0x0;
-    __code_start = .;
+    . = 0x80000;
+    
     .text.boot : { 
         *(.text.boot) 
     }
-    __text_start = .;
+    
     .text : { 
+        __text_start = .;
         *(.text) 
     }
-    .rodata : { 
-        *(.rodata) 
+    
+    . = ALIGN(8);
+    .rodata : ALIGN(8) {
+        __rodata_start = .;
+        *(.rodata)
+        *(.rodata.*)
+        . = ALIGN(8);
+        __rodata_end = .;
     }
-    .data : ALIGN(4096) {
+    
+    . = ALIGN(4096);
+    .data : {
         __data_start = .;
         *(.data)
-        *(.data.*)
         . = ALIGN(4096);
         __data_end = .;
     }
+    
+    . = ALIGN(8);
     bss_begin = .;
     .bss : { 
         *(.bss*) 

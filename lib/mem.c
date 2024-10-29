@@ -5,16 +5,6 @@
 #define MAX_MANAGED_PAGES 512
 static u8 mem_map[MAX_MANAGED_PAGES] = {0};
 
-void *memcpy(void *dest, const void *src, u32 n) {
-    u8 *byte_dest = (u8 *) dest;
-    u8 *byte_src = (u8 *) src;
-
-    for (u32 i = 0; i < n; i++) {
-        byte_dest[i] = byte_src[i];
-    }
-    return dest;
-}
-
 void *get_free_page() {
     for (int i = 0; i < PAGING_PAGES; i++) {
         if (mem_map[i] == 0) {

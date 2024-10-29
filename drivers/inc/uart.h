@@ -28,6 +28,9 @@ typedef struct {
     u32 baudrate;
     u8 tx;
     u8 rx;
+    u8 cts;
+    u8 rts;
+    bool bluetooth;
 } UartSettings;
 
 #define UARTCLK 48000000 // 48 MHz
@@ -49,5 +52,5 @@ void uart_init(UartSettings *settings);
 void uart_transmit(char c);
 void uart_transmit_string(char *str);
 char uart_receive();
-void handle_uart_irq();
+void handle_uart0_irq();
 bool uart_read_ready();

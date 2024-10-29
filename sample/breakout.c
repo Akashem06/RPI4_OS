@@ -171,7 +171,7 @@ char get_uart()
     return ch;
 }
 
-void handle_uart_irq() {
+void handle_uart0_irq() {
     while (!(settings.uart->fr & (1 << 4))) {
         ch = settings.uart->dr & 0xFF;
     }

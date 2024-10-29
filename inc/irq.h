@@ -3,16 +3,39 @@
 #include "base.h"
 #include "common.h"
 
-enum videocore_irqs_low {
-    SYS_TIMER_IRQ_0 = 1,
-    SYS_TIMER_IRQ_1 = 2,
-    SYS_TIMER_IRQ_2 = 4,
-    SYS_TIMER_IRQ_3 = 8,
-    AUX_IRQ = (1 << 29),
-};
-
-enum videocore_irqs_high {
-    UART_IRQ = (1 << (57 - 32) ),
+enum irq_sources {
+    // GPU IRQs (0-31)
+    IRQ_TIMER_0      = (1 << 0),
+    IRQ_TIMER_1      = (1 << 1),
+    IRQ_TIMER_2      = (1 << 2),
+    IRQ_TIMER_3      = (1 << 3),
+    IRQ_CODEC_0      = (1 << 4),
+    IRQ_CODEC_1      = (1 << 5),
+    IRQ_CODEC_2      = (1 << 6),
+    IRQ_JPEG         = (1 << 7),
+    IRQ_ISP          = (1 << 8),
+    IRQ_USB          = (1 << 9),
+    IRQ_3D           = (1 << 10),
+    IRQ_DMA_0        = (1 << 16),
+    IRQ_AUX          = (1 << 29),
+    
+    // GPU1 IRQs (32-63)
+    IRQ_I2C_SPI_SLV  = (1 << (37-32)),
+    IRQ_PWA0         = (1 << (45-32)),
+    IRQ_PWA1         = (1 << (46-32)),
+    IRQ_SMI          = (1 << (48-32)),
+    IRQ_GPIO_0       = (1 << (49-32)),
+    IRQ_GPIO_1       = (1 << (50-32)),
+    IRQ_GPIO_2       = (1 << (51-32)),
+    IRQ_GPIO_3       = (1 << (52-32)),
+    IRQ_I2C          = (1 << (53-32)),
+    IRQ_SPI          = (1 << (54-32)),
+    IRQ_PCM          = (1 << (55-32)),
+    IRQ_UART_0       = (1 << (57-32)),
+    IRQ_UART_2       = (1 << (58-32)),
+    IRQ_UART_3       = (1 << (59-32)),
+    IRQ_UART_4       = (1 << (60-32)),
+    IRQ_UART_5       = (1 << (61-32)),
 };
 
 struct arm_irq_regs_rpi4 {

@@ -9,6 +9,5 @@
 // Peripherals (DMA/GPU) communicate with the BUS ADDRESS which is calculated like this
 #define BUS_ADDRESS(addr)	(((addr) & ~0xC0000000) | GPU_MEM_BASE)
 
-void *memcpy(void *dest, const void *src, u32 n);
 void free_page(u64 p);
 void *get_free_page();

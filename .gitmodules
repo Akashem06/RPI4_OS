@@ -1,0 +1,3 @@
+[submodule "RPI_Bluetooth"]
+	path = RPI_Bluetooth
+	url = https://github.com/Akashem06/RPI_Bluetooth.git

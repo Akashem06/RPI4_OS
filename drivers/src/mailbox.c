@@ -1,7 +1,7 @@
 #include "mailbox.h"
 #include "base.h"
 #include "log.h"
-#include "mem.h"
+#include "mm.h"
 
 // Stores property data sent/received from the videocore. Aligned at 16 byes as required
 static u32 property_data[8192] __attribute__((aligned(16)));

@@ -1,5 +1,7 @@
 #include "log.h"
 
+LogModes config_mode = LOG_MODE_UART;
+
 void log_format(const char *format, va_list args) {
     while (*format) {
         if (*format == '%') {
@@ -26,7 +28,11 @@ void log_format(const char *format, va_list args) {
                     }
 
                     while (--i >= 0) {
-                        uart_transmit(buffer[i]);
+                        if (config_mode == LOG_MODE_UART) {
+                            uart_transmit(buffer[i]);
+                        } else if (config_mode == LOG_MODE_MINIUART) {
+                            mini_uart_transmit(buffer[i]);
+                        }
                     }
                     break;
                 }
@@ -52,7 +58,11 @@ void log_format(const char *format, va_list args) {
                     }
 
                     while (--i >= 0) {
-                        uart_transmit(buffer[i]);
+                        if (config_mode == LOG_MODE_UART) {
+                            uart_transmit(buffer[i]);
+                        } else if (config_mode == LOG_MODE_MINIUART) {
+                            mini_uart_transmit(buffer[i]);
+                        }
                     }
                     break;
                 }
@@ -60,19 +70,32 @@ void log_format(const char *format, va_list args) {
                 case 's': {
                     char *str = va_arg(args, char*);
                     while (*str) {
-                        uart_transmit(*str);
+                        if (config_mode == LOG_MODE_UART) {
+                            uart_transmit(*str);
+                        } else if (config_mode == LOG_MODE_MINIUART) {
+                            mini_uart_transmit(*str);
+                        }
                         str++;
                     }
                     break;
                 }
                 default:
-                    uart_transmit('%');
-                    uart_transmit(*format);
+                    if (config_mode == LOG_MODE_UART) {
+                        uart_transmit('%');
+                        uart_transmit(*format);
+                    } else if (config_mode == LOG_MODE_MINIUART) {
+                        mini_uart_transmit('%');
+                        mini_uart_transmit(*format);
+                    }
                     break;
             }
 
         } else {
-            uart_transmit(*format);
+            if (config_mode == LOG_MODE_UART) {
+                uart_transmit(*format);
+            } else if (config_mode == LOG_MODE_MINIUART) {
+                mini_uart_transmit(*format);
+            }
         }
 
         format++;
@@ -187,4 +210,8 @@ void log(char *format, ...) {
     va_start(args, format);
     log_format(format, args);
     va_end(args);
+}
+
+void log_init(LogModes mode) {
+    config_mode = mode;
 }

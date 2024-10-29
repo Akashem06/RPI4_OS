@@ -22,7 +22,7 @@ typedef struct {
 void timer_init(u8 timer_id, u32 interval, void (*handler)(void));
 void handle_timer_irq();
 u64 timer_get_ticks();
-void timer_sleep();
+void timer_sleep(u32 ms);
 
 #define TIMER_BASE (PBASE + 0x00003000) // Timer register base address
 #define TIMER_REGS (( volatile TimerRegisters * )(TIMER_BASE))
