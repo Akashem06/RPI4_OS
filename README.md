@@ -1,5 +1,5 @@
-Credit goes to:
-Learned alot from: https://github.com/s-matyukevich/raspberry-pi-os/tree/master
+Great resource: https://github.com/s-matyukevich/raspberry-pi-os/tree/master
+This got me started on baremetal dev on the RPI
 
 Educational project!
 Adapted for RPI3/RPI4
