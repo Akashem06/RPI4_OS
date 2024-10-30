@@ -24,7 +24,7 @@ void kernel_init() {
 void kernel_main() {
     kernel_init();
 
-    HCI_Error status;
+    HCIError status;
     
     log("Starting Bluetooth initialization...\n\r");
     
