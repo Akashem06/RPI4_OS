@@ -9,7 +9,7 @@
 #include "gpio.h"
 #include "log.h"
 
-const char entry_error_messages[16][32] = {
+const char entry_error_messages[17][32] = {
 	"SYNC_INVALID_EL1t",
 	"IRQ_INVALID_EL1t",		
 	"FIQ_INVALID_EL1t",		
@@ -28,7 +28,9 @@ const char entry_error_messages[16][32] = {
 	"SYNC_INVALID_EL0_32",		
 	"IRQ_INVALID_EL0_32",		
 	"FIQ_INVALID_EL0_32",		
-	"ERROR_INVALID_EL0_32"	
+	"ERROR_INVALID_EL0_32",
+
+    "SYSCALL_ERROR",
 };
 
 void show_invalid_entry_message(u32 type, u64 esr, u64 address, u64 fault_addr_reg, u64 stack_pointer) {

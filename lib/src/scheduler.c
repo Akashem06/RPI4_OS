@@ -5,6 +5,7 @@
 #include "mm.h"
 #include "mem.h"
 #include "timer.h"
+#include "sysregs.h"
 #include <stddef.h>
 #include <stdbool.h>
 
@@ -171,7 +172,7 @@ void scheduler_init() {
     is_initialized = true;
 }
 
-long scheduler_create_task(u64 func, u64 arg, long priority) {
+int scheduler_create_task(u64 clone_flags, u64 func, u64 arg, long priority) {
     if (is_initialized == false) {
         return 1;
     }
@@ -190,7 +191,21 @@ long scheduler_create_task(u64 func, u64 arg, long priority) {
         return 4;
     }
 
-    memzero((unsigned long)p, sizeof(struct TaskBlock));
+    ProcessStateRegisters *childregs = get_current_pstate(p);
+    memzero((u64)childregs, sizeof(ProcessStateRegisters));
+    memzero((u64)p, sizeof(struct TaskBlock));
+
+    if (clone_flags & PF_KTHREAD) {
+        p->cpu_context.x19 = func;
+		p->cpu_context.x20 = arg;
+    } else {
+        ProcessStateRegisters *cur_regs = get_current_pstate(current); 
+        *childregs = *cur_regs;
+		childregs->regs[0] = 0;
+		childregs->sp = stack + PAGE_SIZE;
+		p->stack = stack;
+    }
+
     p->state = TASK_RUNNING;
     p->priority = priority;
     p->counter = priority;
@@ -201,11 +216,52 @@ long scheduler_create_task(u64 func, u64 arg, long priority) {
 
     p->cpu_context.x19 = func;
     p->cpu_context.x20 = arg;
-    p->cpu_context.sp = ((u64)p + 4096UL) & ~15ULL;
+    p->cpu_context.sp = ((u64)p + THREAD_SIZE) & ~15ULL;
     p->cpu_context.lr = new_task_addr;
 
     u8 pid = num_tasks++;
     task[pid] = p;    
     preempt_enable();
     return 0;
+}
+
+int move_task_to_user_mode(u64 func) {
+    ProcessStateRegisters *regs = get_current_pstate(current);
+    memzero((u64)regs, sizeof(*regs));
+    // Points to the function that needs to be executed next in user mode.
+    // Kernel_exit will copy PC to the ELR_EL1 register, ensuring that we return to this function
+    regs->pc = func;
+
+    // This is copied to spsr_el1 by kernel_exit and becomes the new state of the processor after leaving.
+    regs->pstate = PSR_MODE_EL0t;
+
+    // New user stack
+    u64 stack = get_free_page();
+    if (!stack) {
+        return -1;
+    }
+
+    regs->sp = stack + PAGE_SIZE;
+    current->stack = stack;
+    return 0;
+}
+
+ProcessStateRegisters *get_current_pstate(struct TaskBlock *task) {
+    // We will save the ProcessStateRegisters at the top of the stack
+    u64 p = (u64)task + THREAD_SIZE - sizeof(ProcessStateRegisters);
+    return (ProcessStateRegisters *)p;
+}
+
+void scheduler_exit_task() {
+    preempt_disable();
+    for (u8 i = 0; i < NUM_TASKS; i++) {
+        if (task[i] == current) {
+            current->state = TASK_ZOMBIE;
+        }
+    }
+    if (current->stack) {
+		free_page(current->stack);
+	}
+	preempt_enable();
+	schedule();
 }

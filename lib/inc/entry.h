@@ -35,7 +35,13 @@
 #define FIQ_INVALID_EL0_32      14
 #define ERROR_INVALID_EL0_32    15
 
-#define S_FRAME_SIZE            256
+#define SYSCALL_ERROR			17
+
+// This is calculated as thus:
+// x0 to 30 = 31 * 8 = 256
+// ELR_EL1 + SPSR_EL1 = 16
+// Total = 272
+#define S_FRAME_SIZE            272
 
 #ifndef __ASSEMBLER__
 void cpu_new_task(void);

@@ -13,6 +13,8 @@
 #define TASK_ZOMBIE				2L
 #define TASK_BLOCKED			3L
 
+#define PF_KTHREAD		        2UL
+
 extern volatile struct TaskBlock *current;
 extern volatile struct TaskBlock *task[NUM_TASKS];
 extern volatile u8 num_tasks;
@@ -34,17 +36,27 @@ struct CPUContext {
 };
 
 struct TaskBlock {
-    struct CPUContext cpu_context __attribute__((aligned(16)));
-    long state __attribute__((aligned(8)));     
-    long counter __attribute__((aligned(8)));
-    long priority __attribute__((aligned(8)));
-    long preempt_count __attribute__((aligned(8)));
+    struct CPUContext cpu_context;
+    long state;
+    long counter;
+    long priority;
+    long preempt_count;
+
+	unsigned long stack;
+	unsigned long flags;
 } __attribute__((aligned(16)));
 
 
-#define MIN_PRIORITY      1
+typedef struct {
+	unsigned long regs[31];		// All registers X0-X30
+	unsigned long sp;			// Stack pointer
+	unsigned long pc;			// Program counteer
+	unsigned long pstate;		// Processor state register (PSTATE) CONDITION FLAGS NZCV etc.
+} ProcessStateRegisters;
+
+#define MIN_PRIORITY     1
 #define MAX_PRIORITY     10
-#define DEFAULT_PRIORITY  5
+#define DEFAULT_PRIORITY 5
 #define MIN_TIMESLICE    2
 #define STARVATION_LIMIT 100
 
@@ -56,7 +68,10 @@ void preempt_enable(void);
 void switch_to(struct TaskBlock* next);
 
 extern u64 get_cpu_new_task_addr(void);
-long scheduler_create_task(u64 func, u64 arg, long priority);
+int scheduler_create_task(u64 func, u64 arg, long priority);
+int move_task_to_user_mode(u64 func);
+void scheduler_exit_task();
+ProcessStateRegisters *get_current_pstate(struct TaskBlock *task);
 void cpu_context_switch(struct TaskBlock* prev, struct TaskBlock* next);
 
 #define INIT_TASK \

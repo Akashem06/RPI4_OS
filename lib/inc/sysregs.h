@@ -29,3 +29,16 @@
 #define SPSR_MASK_ALL 		(7 << 6) // We want to mask/disable all interrupts in EL1
 #define SPSR_EL1h			(5 << 0) // We want to jump to EL1h for the kernel, so set this as our SP
 #define SPSR_VALUE			(SPSR_MASK_ALL | SPSR_EL1h)
+
+// ESR_EL1, Exception syndrome register (EL1) Page 2431 of AArch64-Reference-Manual
+#define ESR_EL1_EC_SHIFT    26
+#define ESR_EL1_EC_SVC64    0x15
+
+// PSR bits
+#define PSR_MODE_EL0t	0x00000000
+#define PSR_MODE_EL1t	0x00000004
+#define PSR_MODE_EL1h	0x00000005
+#define PSR_MODE_EL2t	0x00000008
+#define PSR_MODE_EL2h	0x00000009
+#define PSR_MODE_EL3t	0x0000000C
+#define PSR_MODE_EL3h	0x0000000D
