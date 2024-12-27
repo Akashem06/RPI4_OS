@@ -1,10 +1,11 @@
 #pragma once
 
+#include <stdbool.h>
+
 #include "common.h"
+#include "dma.h"
 #include "mailbox.h"
 #include "mm.h"
-#include "dma.h"
-#include <stdbool.h>
 
 #define TEXT_COLOR 0xFFFFFFFF
 #define BACK_COLOR 0xFF090909
@@ -20,40 +21,40 @@
 #define DRAWBUFFER FRAMEBUFFER
 
 typedef struct {
-    MailboxTag tag;
-    u32 xres;
-    u32 yres;
+  MailboxTag tag;
+  u32 xres;
+  u32 yres;
 } MailboxFBSize;
 
 typedef struct {
-    MailboxTag tag;
-    u32 bpp;
+  MailboxTag tag;
+  u32 bpp;
 } MailboxFBDepth;
 
 typedef struct {
-    MailboxTag tag;
-    u32 pitch;
+  MailboxTag tag;
+  u32 pitch;
 } MailboxFBPitch;
 
 typedef struct {
-    MailboxTag tag;
-    u32 base; 
-    u32 screen_size;
+  MailboxTag tag;
+  u32 base;
+  u32 screen_size;
 } MailboxFBBuffer;
 
 typedef struct {
-    MailboxFBSize res;
-    MailboxFBSize vres;
-    MailboxFBDepth depth;
-    MailboxFBBuffer buff;
-    MailboxFBPitch pitch;
+  MailboxFBSize res;
+  MailboxFBSize vres;
+  MailboxFBDepth depth;
+  MailboxFBBuffer buff;
+  MailboxFBPitch pitch;
 } MailboxFBRequest;
 
-typedef struct  {
-    MailboxTag tag;
-    u32 offset;
-    u32 num_entries;
-    u32 entries[8];
+typedef struct {
+  MailboxTag tag;
+  u32 offset;
+  u32 num_entries;
+  u32 entries[8];
 } MailboxSetPallete;
 
 void video_init();

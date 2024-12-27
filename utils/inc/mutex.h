@@ -3,7 +3,7 @@
 #include "common.h"
 
 typedef struct {
-    volatile uint32_t notified;
+  volatile uint32_t notified;
 } Notif;
 
 void notif_init(Notif *notif);
