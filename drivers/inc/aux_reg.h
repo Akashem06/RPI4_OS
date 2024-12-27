@@ -1,7 +1,21 @@
 #pragma once
 
-#include "base.h"
+/*******************************************************************************************************************************
+ * @file   aux_reg.h
+ *
+ * @brief  AUX register header file for the BCM2711 SoC
+ *
+ * @date   2024-12-27
+ * @author Aryan Kashem
+ *******************************************************************************************************************************/
+
+/* Standard library Headers */
+
+/* Inter-component Headers */
 #include "common.h"
+#include "hardware.h"
+
+/* Intra-component Headers */
 
 typedef struct {
   reg32 irq_status;
@@ -20,5 +34,7 @@ typedef struct {
   reg32 mu_baudrate;
 } AuxRegisters;
 
-#define AUX_BASE (PBASE + 0x00215000)
+#define AUX_BASE (PERIPHERAL_BASE_ADDRESS + 0x00215000U)
 #define AUX_REGS ((volatile AuxRegisters *)(AUX_BASE))
+
+/** @} */

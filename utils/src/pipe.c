@@ -2,9 +2,9 @@
 
 #include <stddef.h>
 
-error_os pipe(Pipe *pipe);
+ErrorCode pipe(Pipe *pipe);
 
-error_os pipe_read(Pipe *pipe, u8 *buff, u16 size) {
+ErrorCode pipe_read(Pipe *pipe, u8 *buff, u16 size) {
   if (buff == NULL) {
     return -1;
   }
@@ -26,7 +26,7 @@ error_os pipe_read(Pipe *pipe, u8 *buff, u16 size) {
   return bytes_read;
 }
 
-error_os pipe_write(Pipe *pipe, u8 *buff, u16 size) {
+ErrorCode pipe_write(Pipe *pipe, u8 *buff, u16 size) {
   if (buff == NULL) {
     return -1;
   }
@@ -56,7 +56,7 @@ error_os pipe_write(Pipe *pipe, u8 *buff, u16 size) {
   return bytes_written;
 }
 
-error_os pipe_close(Pipe *pipe) {
+ErrorCode pipe_close(Pipe *pipe) {
   pipe->closed = 1;
   return 0;
 }

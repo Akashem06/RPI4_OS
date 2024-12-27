@@ -17,16 +17,16 @@
 
 /**
  * @defgroup BCM2711_Hardware BCM2711 Hardware layer
- * @brief    Abstraction layer for the BCM2711 SOC from Broadcom
+ * @brief    Abstraction layer for the BCM2711 SoC from Broadcom
  * @{
  */
 
 /**
  * @brief   Data memory barrier. Ensures memory access ordering is correct
  * @details Typically used when the order of memory accesses (reads and writes) is important to
- *          avoid pipelining hazards For example, in a multi-core system, a DMB instruction can ensure that
- *          all previous memory accesses are completed before new memory accesses are initiated, preventing
- *          issues with out-of-order execution
+ *          avoid pipelining hazards For example, in a multi-core system, a DMB instruction can
+ *          ensure that all previous memory accesses are completed before new memory accesses are
+ *          initiated, preventing issues with out-of-order execution
  */
 static inline void dmb(void) {
   asm volatile("dmb sy" ::: "memory");
@@ -47,8 +47,9 @@ static inline void dsb(void) {
  * @brief   Instruction synchronization barrier. Ensures all instructions in the pipeline are
  *          completed before moving on
  * @details Typically used when it is necessary to ensure that all previous instructions have
- *          completed before executing further instructions For example, after a context switch, ISB ensures
- *          that any speculatively executed instructions (like branch predictions) are discarded
+ *          completed before executing further instructions For example, after a context switch, ISB
+ *          ensures that any speculatively executed instructions (like branch predictions) are
+ *          discarded
  */
 static inline void isb(void) {
   asm volatile("isb sy" ::: "memory");

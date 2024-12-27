@@ -1,27 +1,49 @@
 #pragma once
 
+/*******************************************************************************************************************************
+ * @file   uart.h
+ *
+ * @brief  UART header file for the BCM2711 SoC
+ *
+ * @date   2024-12-27
+ * @author Aryan Kashem
+ *******************************************************************************************************************************/
+
+/* Standard library Headers */
 #include <stdbool.h>
 
-#include "base.h"
+/* Inter-component Headers */
 #include "common.h"
+#include "hardware.h"
 
+/* Intra-component Headers */
+
+/**
+ * @defgroup BCM2711_UART BCM2711 UART API
+ * @brief    UART Abstraction layer for the BCM2711 SoC from Broadcom
+ * @{
+ */
+
+/**
+ * @brief   UART Register definitions
+ */
 typedef struct {
-  reg32 dr;       // Data Register
-  reg32 rsr_ecr;  // Receive Status/Error Clear Register
+  reg32 dr;      /**< Data Register */
+  reg32 rsr_ecr; /**< Receive Status/Error Clear Register */
   reg32 reserved[4];
-  reg32 fr;  // Flag Register
+  reg32 fr; /**< Flag Register */
   reg32 reserved1;
-  reg32 ilpr;   // IrDA Low-Power Counter Register
-  reg32 ibrd;   // Integer Baud Rate Register
-  reg32 fbrd;   // Fractional Baud Rate Register
-  reg32 lcrh;   // Line Control Register
-  reg32 cr;     // Control Register
-  reg32 ifls;   // Interrupt FIFO Level Select Register
-  reg32 imsc;   // Interrupt Mask Set/Clear Register
-  reg32 ris;    // Raw Interrupt Status Register
-  reg32 mis;    // Masked Interrupt Status Register
-  reg32 icr;    // Interrupt Clear Register
-  reg32 dmacr;  // DMA Control Register
+  reg32 ilpr;  /**< IrDA Low-Power Counter Register */
+  reg32 ibrd;  /**< Integer Baud Rate Register */
+  reg32 fbrd;  /**< Fractional Baud Rate Register */
+  reg32 lcrh;  /**< Line Control Register */
+  reg32 cr;    /**< Control Register */
+  reg32 ifls;  /**< Interrupt FIFO Level Select Register */
+  reg32 imsc;  /**< Interrupt Mask Set/Clear Register */
+  reg32 ris;   /**< Raw Interrupt Status Register */
+  reg32 mis;   /**< Masked Interrupt Status Register */
+  reg32 icr;   /**< Interrupt Clear Register */
+  reg32 dmacr; /**< DMA Control Register */
 } UartRegisters;
 
 typedef struct {
@@ -55,3 +77,5 @@ void uart_transmit_string(char *str);
 char uart_receive();
 void handle_uart0_irq();
 bool uart_read_ready();
+
+/** @} */

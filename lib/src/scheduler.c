@@ -12,11 +12,11 @@
 #include "timer.h"
 
 struct TaskBlock init_task = INIT_TASK;
-static is_initialized = false;
+static bool is_initialized = false;
 
-__attribute__((aligned(8), section(".data"))) volatile struct TaskBlock *current = NULL;
-__attribute__((aligned(8), section(".data"))) volatile struct TaskBlock *task[NUM_TASKS] = { NULL };
-__attribute__((aligned(8), section(".data"))) volatile u8 num_tasks = 0;
+__attribute__((aligned(8), section(".data"))) struct TaskBlock *current = NULL;
+__attribute__((aligned(8), section(".data"))) struct TaskBlock *task[NUM_TASKS] = { NULL };
+__attribute__((aligned(8), section(".data"))) u8 num_tasks = 0;
 
 static inline long clamp_priority(long priority) {
   if (priority < MIN_PRIORITY) return MIN_PRIORITY;
@@ -180,7 +180,7 @@ int scheduler_create_task(u64 clone_flags, u64 func, u64 arg, long priority) {
   }
 
   preempt_disable();
-  volatile struct TaskBlock *p;
+  struct TaskBlock *p;
 
   p = (struct TaskBlock *)get_free_page();
   if (!p) return 3;
@@ -201,8 +201,8 @@ int scheduler_create_task(u64 clone_flags, u64 func, u64 arg, long priority) {
     ProcessStateRegisters *cur_regs = get_current_pstate(current);
     *childregs = *cur_regs;
     childregs->regs[0] = 0;
-    childregs->sp = stack + PAGE_SIZE;
-    p->stack = stack;
+    // childregs->sp = stack + PAGE_SIZE;
+    // p->stack = stack;
   }
 
   p->state = TASK_RUNNING;
@@ -236,7 +236,7 @@ int move_task_to_user_mode(u64 func) {
   regs->pstate = PSR_MODE_EL0t;
 
   // New user stack
-  u64 stack = get_free_page();
+  u64 stack = (u64)get_free_page();
   if (!stack) {
     return -1;
   }

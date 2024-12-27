@@ -1,5 +1,27 @@
 #pragma once
 
+/*******************************************************************************************************************************
+ * @file   scheduler.h
+ *
+ * @brief  Main scheduler header file
+ *
+ * @date   2024-12-27
+ * @author Aryan Kashem
+ *******************************************************************************************************************************/
+
+/* Standard library Headers */
+
+/* Inter-component Headers */
+
+/* Intra-component Headers */
+
+/**
+ * @defgroup Scheduler OS Scheduler Library
+ * @brief    Library that supports CFS, Priority/regular round-robin, EDF, First-come-first-serve
+ * scheduling algorithms
+ * @{
+ */
+
 #define CPU_CONTEXT_OFFSET 0  // offset of cpu_context in TaskBlock
 
 #ifndef __ASSEMBLER__
@@ -15,9 +37,9 @@
 
 #define PF_KTHREAD 2UL
 
-extern volatile struct TaskBlock *current;
-extern volatile struct TaskBlock *task[NUM_TASKS];
-extern volatile u8 num_tasks;
+extern struct TaskBlock *current;
+extern struct TaskBlock *task[NUM_TASKS];
+extern u8 num_tasks;
 
 struct CPUContext {
   u64 x19;
@@ -67,17 +89,21 @@ void preempt_enable(void);
 void switch_to(struct TaskBlock *next);
 
 extern u64 get_cpu_new_task_addr(void);
-int scheduler_create_task(u64 func, u64 arg, long priority);
+int scheduler_create_task(u64 clone_flags, u64 func, u64 arg, long priority);
 int move_task_to_user_mode(u64 func);
 void scheduler_exit_task();
 ProcessStateRegisters *get_current_pstate(struct TaskBlock *task);
 void cpu_context_switch(struct TaskBlock *prev, struct TaskBlock *next);
 
-#define INIT_TASK /* CpuContext */                   \
-  { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },       \
-    /* state, counter, priority, preempt_count */ 0, \
-    0,                                               \
-    1,                                               \
-    0 }
+#define INIT_TASK /* CpuContext */             \
+  { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, \
+    0, /* state */                             \
+    0, /* counter */                           \
+    1, /* priority */                          \
+    0, /* preempt_count */                     \
+    0, /* stack */                             \
+    0 /* flags */ }
 
 #endif
+
+/** @} */

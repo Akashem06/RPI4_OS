@@ -17,7 +17,7 @@ int sys_call_clone_task(unsigned long stack) {
 }
 
 unsigned long sys_call_malloc() {
-  unsigned long addr = get_free_page();
+  u64 addr = (u64)get_free_page();
   if (!addr) {
     return -1;
   }

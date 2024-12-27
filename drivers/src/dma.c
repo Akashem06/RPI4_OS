@@ -34,7 +34,7 @@ DmaChannel *dma_open_channel(u32 channel) {
   }
 
   // Initializes the DMA channel
-  // RPI including other SOCs use control blocks to define source/dest addr, byte number, etc.
+  // RPI including other SoCs use control blocks to define source/dest addr, byte number, etc.
   DmaChannel *dma = (DmaChannel *)&dma_channels[allocated_channel];
   dma->channel = allocated_channel;
   dma->block = (DmaControlBlock *)((LOW_MEMORY + 31) & ~31);
