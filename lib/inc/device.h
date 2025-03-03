@@ -1,9 +1,9 @@
 #pragma once
 
 /*******************************************************************************************************************************
- * @file   hardware.h
+ * @file   device.h
  *
- * @brief  Hardware-specific includes
+ * @brief  Device definitions
  *
  * @date   2024-12-27
  * @author Aryan Kashem
@@ -12,23 +12,20 @@
 /* Standard library Headers */
 
 /* Inter-component Headers */
+#include "spinlock.h"
 
 /* Intra-component Headers */
 
 /**
- * @defgroup Hardware Hardware includes
+ * @defgroup Device Device interface
  * @{
  */
 
-#if RPI_VERSION == 4U
-
-#include "bcm2711.h"
-#ifndef __ASSEMBLER__
-#include "arm64_barrier.h"
-#include "bcm2711_cpu.h"
-#include "bcm2711_periph_io.h"
-#endif
-
-#endif
+struct Device {
+  const char *name;
+  void *private_data;
+  struct DeviceOps *device_ops;
+  struct Spinlock lock;
+};
 
 /** @} */

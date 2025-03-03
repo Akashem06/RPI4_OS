@@ -24,7 +24,7 @@
  */
 
 /** @brief  Custom definition for IO memory */
-#define __io_memory __attribute__((noderef))
+#define __io_memory volatile
 
 /**
  * @brief   Write 1 byte of data to a provided address
@@ -78,7 +78,7 @@ static inline void write64(u64 address, u64 value) {
  * @brief   Read 1 byte of data from a provided address
  * @param   address Physical memory address
  */
-u8 read8(u64 address) {
+static inline u8 read8(u64 address) {
   u8 value;
 
   asm volatile("ldrb %w0, [%1]         \n" /* Read a byte of data */
@@ -93,7 +93,7 @@ u8 read8(u64 address) {
  * @brief   Read 2 bytes of data from a provided address
  * @param   address Physical memory address
  */
-u16 read16(u64 address) {
+static inline u16 read16(u64 address) {
   u16 value;
 
   asm volatile("ldrh %w0, [%1]         \n" /* Read 2 bytes (half) of data */
@@ -108,7 +108,7 @@ u16 read16(u64 address) {
  * @brief   Read 4 bytes of data from a provided address
  * @param   address Physical memory address
  */
-u32 read32(u64 address) {
+static inline u32 read32(u64 address) {
   u32 value;
 
   asm volatile("ldr %w0, [%1]          \n" /* Read 4 bytes of data */
@@ -123,10 +123,10 @@ u32 read32(u64 address) {
  * @brief   Read 8 bytes of data from a provided address
  * @param   address Physical memory address
  */
-u64 read64(u64 address) {
+static inline u64 read64(u64 address) {
   u64 value;
 
-  asm volatile("ldrd %w0, [%1]         \n" /* Read 8 bytes (double) of data */
+  asm volatile("ldr %w0, [%1]         \n" /* Read 8 bytes (double) of data */
                : "=r"(value)
                : "r"(address)
                : "memory");
@@ -135,8 +135,9 @@ u64 read64(u64 address) {
 }
 
 /* Simple memory mapping function (basic version) */
-static inline void __io_memory *ioremap(u64 physical_address, u64 size) {
-  return (void __io_memory *)(physical_address + PERIPHERAL_BASE_ADDRESS);
+static inline __io_memory void *ioremap(u64 physical_address, u64 size) {
+  (void)size;
+  return (__io_memory void *)(physical_address + PERIPHERAL_BASE_ADDRESS);
 }
 
 /** @} */

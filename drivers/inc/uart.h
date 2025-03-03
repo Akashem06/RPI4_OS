@@ -28,22 +28,22 @@
  * @brief   UART Register definitions
  */
 typedef struct {
-  reg32 dr;      /**< Data Register */
-  reg32 rsr_ecr; /**< Receive Status/Error Clear Register */
-  reg32 reserved[4];
-  reg32 fr; /**< Flag Register */
-  reg32 reserved1;
-  reg32 ilpr;  /**< IrDA Low-Power Counter Register */
-  reg32 ibrd;  /**< Integer Baud Rate Register */
-  reg32 fbrd;  /**< Fractional Baud Rate Register */
-  reg32 lcrh;  /**< Line Control Register */
-  reg32 cr;    /**< Control Register */
-  reg32 ifls;  /**< Interrupt FIFO Level Select Register */
-  reg32 imsc;  /**< Interrupt Mask Set/Clear Register */
-  reg32 ris;   /**< Raw Interrupt Status Register */
-  reg32 mis;   /**< Masked Interrupt Status Register */
-  reg32 icr;   /**< Interrupt Clear Register */
-  reg32 dmacr; /**< DMA Control Register */
+  reg32 dr;          /**< Data Register */
+  reg32 rsr_ecr;     /**< Receive Status/Error Clear Register */
+  reg32 reserved[4]; /**< Reserved */
+  reg32 fr;          /**< Flag Register */
+  reg32 reserved1;   /**< Reserved */
+  reg32 ilpr;        /**< IrDA Low-Power Counter Register */
+  reg32 ibrd;        /**< Integer Baud Rate Register */
+  reg32 fbrd;        /**< Fractional Baud Rate Register */
+  reg32 lcrh;        /**< Line Control Register */
+  reg32 cr;          /**< Control Register */
+  reg32 ifls;        /**< Interrupt FIFO Level Select Register */
+  reg32 imsc;        /**< Interrupt Mask Set/Clear Register */
+  reg32 ris;         /**< Raw Interrupt Status Register */
+  reg32 mis;         /**< Masked Interrupt Status Register */
+  reg32 icr;         /**< Interrupt Clear Register */
+  reg32 dmacr;       /**< DMA Control Register */
 } UartRegisters;
 
 typedef struct {

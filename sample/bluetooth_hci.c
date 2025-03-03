@@ -1,10 +1,11 @@
+#include "kernel.h"
+
 #include <stdint.h>
 
 #include "common.h"
 #include "hci.h"
 #include "hci_defs.h"
 #include "irq.h"
-#include "kernel.h"
 #include "log.h"
 #include "timer.h"
 #include "utils.h"

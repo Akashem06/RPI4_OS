@@ -1,6 +1,7 @@
 #include "i2c.h"
 
 #include "gpio.h"
+#include "hardware.h"
 
 static void i2c_setup(u8 address, u32 size, u32 control_flags) {
   I2C_REGS->slave_address = address;
@@ -10,7 +11,7 @@ static void i2c_setup(u8 address, u32 size, u32 control_flags) {
   I2C_REGS->control = C_I2CEN | C_ST | control_flags;
 }
 
-static I2CStatus i2c_check_status(reg32 status, int count, u32 size) {
+static I2CStatus i2c_check_status(reg32 status, u32 count, u32 size) {
   if (status & S_ERR) {
     return I2CS_ACK_ERROR;
   } else if (status & S_CLKT) {
@@ -34,7 +35,7 @@ void i2c_init(I2CClockSpeed clock_speed) {
 }
 
 I2CStatus i2c_recv(u8 address, u8 *buffer, u32 size) {
-  int count = 0;
+  u32 count = 0U;
   int timeout = I2C_TIMEOUT;
 
   i2c_setup(address, size, C_READ);
@@ -59,7 +60,7 @@ I2CStatus i2c_recv(u8 address, u8 *buffer, u32 size) {
 }
 
 I2CStatus i2c_send(u8 address, u8 *buffer, u32 size) {
-  int count = 0;
+  u32 count = 0U;
   int timeout = I2C_TIMEOUT;
 
   i2c_setup(address, size, 0);

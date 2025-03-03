@@ -27,8 +27,10 @@
 #ifndef __ASSEMBLER__
 #include "common.h"
 
-#define THREAD_SIZE 4096L
-#define NUM_TASKS 10L
+/** @brief  Size allocated for Task */
+#define TASK_SIZE 4096
+
+#define NUM_TASKS 10
 
 #define TASK_RUNNING 0L
 #define TASK_SLEEPING 1L
@@ -41,6 +43,9 @@ extern struct TaskBlock *current;
 extern struct TaskBlock *task[NUM_TASKS];
 extern u8 num_tasks;
 
+/**
+ * @brief   CPU register context to be stored and loaded during context switches
+ */
 struct CPUContext {
   u64 x19;
   u64 x20;
@@ -57,6 +62,9 @@ struct CPUContext {
   u64 lr;
 };
 
+/**
+ * @brief   Task Storage struct to track CPU registers, state and process information
+ */
 struct TaskBlock {
   struct CPUContext cpu_context;
   long state;
@@ -66,7 +74,7 @@ struct TaskBlock {
 
   unsigned long stack;
   unsigned long flags;
-} __attribute__((aligned(16)));
+};
 
 typedef struct {
   unsigned long regs[31];  // All registers X0-X30
@@ -81,7 +89,14 @@ typedef struct {
 #define MIN_TIMESLICE 2
 #define STARVATION_LIMIT 100
 
+/**
+ * @brief   Initialize the task scheduler
+ */
 extern void scheduler_init(void);
+
+/**
+ * @brief
+ */
 void schedule(void);
 extern void scheduler_tick_handler(void);
 void preempt_disable(void);

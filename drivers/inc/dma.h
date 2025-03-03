@@ -5,7 +5,7 @@
 #include "common.h"
 #include "log.h"
 #include "mem.h"
-#include "mm.h"
+#include "mem_utils.h"
 #include "timer.h"
 
 #define CS_RESET (1 << 31)
@@ -36,8 +36,8 @@
 
 typedef struct {
   u32 transfer_info;
-  u32 src_addr;
-  u32 dest_addr;
+  u64 src_addr;
+  u64 dest_addr;
   u32 transfer_length;
   u32 mode_2d_stride;
   u32 next_block_addr;
@@ -46,7 +46,7 @@ typedef struct {
 
 typedef struct {
   u32 control;
-  u32 control_block_addr;
+  u64 control_block_addr;
   DmaControlBlock block;
 } DmaChannelRegs;
 
@@ -56,11 +56,11 @@ typedef struct {
   bool status;
 } DmaChannel;
 
-typedef enum { CT_NONE = -1, CT_NORMAL = 0x81 } DmaChannelType;
+typedef enum { CT_NONE = 0, CT_NORMAL = 0x81 } DmaChannelType;
 
-#define DMA_REGS(channel) ((DmaChannelRegs *)(PBASE + 0x00007000 + (channel * 0x100)))
-#define DMA_REGS_INT_STATUS *((volatile u32 *)(PBASE + 0x00007FE0))
-#define DMA_REGS_ENABLE *((volatile u32 *)(PBASE + 0x00007FF0))
+#define DMA_REGS(channel) ((DmaChannelRegs *)(PBASE + 0x00007000UL + (channel * 0x100UL)))
+#define DMA_REGS_INT_STATUS *((volatile u32 *)(PBASE + 0x00007FE0UL))
+#define DMA_REGS_ENABLE *((volatile u32 *)(PBASE + 0x00007FF0UL))
 
 DmaChannel *dma_open_channel(u32 channel);
 void dma_close_channel(DmaChannel *channel);

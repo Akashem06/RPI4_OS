@@ -1,4 +1,4 @@
-
+#include "syscalls.h"
 
 .globl call_sys_write
 .call_sys_write:

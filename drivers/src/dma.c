@@ -13,7 +13,7 @@ static u16 allocate_channel(u32 channel) {
     return -1;  // Channel is not available, return -1 (error)
   }
 
-  u16 i = (channel == CT_NORMAL) ? 6 : 12;  // Choose a starting index based on 'channel' type
+  int i = (channel == CT_NORMAL) ? 6 : 12;  // Choose a starting index based on 'channel' type
 
   for (; i >= 0; i--) {
     if (channel_map & (1 << i)) {
@@ -65,8 +65,8 @@ void dma_setup_mem_copy(DmaChannel *channel, void *dest, void *src, u32 length, 
       | TI_DEST_WIDTH                          // Data width (the word size) for dest address
       | TI_DEST_INC;                           // dest memory will increment with each word write
 
-  channel->block->src_addr = (u32)src;
-  channel->block->dest_addr = (u32)dest;
+  channel->block->src_addr = (u64)src;
+  channel->block->dest_addr = (u64)dest;
   channel->block->transfer_length = length;
   channel->block->mode_2d_stride =
       0;  // 2d stride refers to how memory is copied. 1 means we copy memory in rows and columns
@@ -77,7 +77,7 @@ void dma_setup_mem_copy(DmaChannel *channel, void *dest, void *src, u32 length, 
 void dma_start(DmaChannel *channel) {
   // Sets DMA control block address (source, destination, transfer info, etc.) using the physical
   // bus address
-  DMA_REGS(channel->channel)->control_block_addr = BUS_ADDRESS((u32)channel->block);
+  DMA_REGS(channel->channel)->control_block_addr = BUS_ADDRESS((u64)channel->block);
 
   // DMA waits for any outstanding writes to memory to complete
   // Uses default priority for when the system becomes overwhelmed

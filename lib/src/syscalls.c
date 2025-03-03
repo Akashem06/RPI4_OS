@@ -5,7 +5,7 @@
 #include "entry.h"
 #include "log.h"
 #include "mem.h"
-#include "mm.h"
+#include "mem_utils.h"
 #include "scheduler.h"
 
 void sys_call_write(char *buf) {

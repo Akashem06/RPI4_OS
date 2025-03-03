@@ -1,18 +1,17 @@
-SECTIONS
-{
+SECTIONS {
     . = 0x80000;
     
-    .text.boot : { 
-        *(.text.boot) 
+    .text.boot : {
+        *(.text.boot)
     }
     
-    .text : { 
+    .text : {
         __text_start = .;
-        *(.text) 
+        *(.text)
     }
     
     . = ALIGN(8);
-    .rodata : ALIGN(8) {
+    .rodata : {
         __rodata_start = .;
         *(.rodata)
         *(.rodata.*)
@@ -20,18 +19,19 @@ SECTIONS
         __rodata_end = .;
     }
     
-    . = ALIGN(4096);
+    . = ALIGN(16);
     .data : {
         __data_start = .;
         *(.data)
-        . = ALIGN(4096);
+        . = ALIGN(16);  /* Changed from 4096 */
         __data_end = .;
     }
     
-    . = ALIGN(8);
-    bss_begin = .;
-    .bss : { 
-        *(.bss*) 
-    } 
-    bss_end = .;
+    /* No alignment between data and bss to keep them close */
+    .bss : {
+        bss_begin = .;
+        *(.bss*)
+        . = ALIGN(8);
+        bss_end = .;
+    }
 }

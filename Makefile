@@ -5,15 +5,19 @@ ARMGNU ?= aarch64-linux-gnu
 BUILD_DIR    := build
 OBJ_DIR     := $(BUILD_DIR)/obj
 DEP_DIR     := $(BUILD_DIR)/dep
-SRC_DIRS    := lib/src utils/src drivers/src kernel RPI_Bluetooth/src
-INC_DIRS    := lib/inc utils/inc drivers/inc RPI_Bluetooth/inc
+SRC_DIRS    := lib/src utils/src drivers/src kernel/src RPI_Bluetooth/src BCM2711_hardware/src filesystem/src
+INC_DIRS    := lib/inc utils/inc drivers/inc kernel/inc RPI_Bluetooth/inc BCM2711_hardware/inc filesystem/inc
 BCM4345C0_DIR := BCM4345C0
+
+# Simulation in QEMU
+QEMU      := qemu-system-aarch64
+QEMU_FLAGS := -M raspi4b -cpu cortex-a72 -kernel $(BUILD_DIR)/kernel8.img -serial stdio
 
 # Compiler and linker flags
 WARNINGS     := -Wall -Wextra -Werror
-COMMON_FLAGS := -DRPI_VERSION=$(RPI_VERSION) $(WARNINGS) -nostdlib -nostartfiles -ffreestanding -mgeneral-regs-only
+COMMON_FLAGS := -DRPI_VERSION=$(RPI_VERSION) $(WARNINGS) -nostdlib -nostartfiles -ffreestanding -mgeneral-regs-only -march=armv8-a
 C_FLAGS      := $(COMMON_FLAGS) $(addprefix -I,$(INC_DIRS))
-ASM_FLAGS    := $(COMMON_FLAGS)
+ASM_FLAGS    := $(COMMON_FLAGS) $(addprefix -I,$(INC_DIRS))
 LD_FLAGS     := 
 
 # Find all source files
@@ -78,6 +82,14 @@ $(BUILD_DIR)/kernel8.img: linker.ld $(ALL_OBJS) $(BCM_FW)
 	@echo "Kernel build complete"
 	@echo ""
 
+sim: $(BUILD_DIR)/kernel8.img
+	@echo "Starting QEMU simulation..."
+	@$(QEMU) $(QEMU_FLAGS)
+
+sim-debug: $(BUILD_DIR)/kernel8.img
+	@echo "Starting QEMU simulation with GDB server..."
+	@$(QEMU) $(QEMU_FLAGS) -s -S
+
 # Armstub compilation
 armstub/build/armstub_s.o: armstub/src/armstub.S
 	@echo "Building armstub..."
@@ -95,12 +107,14 @@ format:
 
 help:
 	@echo "Available targets:"
-	@echo "  all      		 - Build the kernel image"
-	@echo "  doxygen   		 - Generate an HTML documentation website"
-	@echo "  armstub   		 - Build the custom armstub"
-	@echo "  clean    		 - Remove build directory"
-	@echo "  format   		 - Format source files using clang-format"
+	@echo "  all        - Build the kernel image"
+	@echo "  doxygen    - Generate an HTML documentation website"
+	@echo "  armstub    - Build the custom armstub"
+	@echo "  clean      - Remove build directory"
+	@echo "  format     - Format source files using clang-format"
+	@echo "  sim        - Run kernel in QEMU"
+	@echo "  sim-debug  - Run kernel in QEMU with GDB server enabled"
 
 -include $(DEP_FILES)
 
-.PHONY: all clean directories doxygen armstub format help
+.PHONY: all clean directories doxygen armstub format help sim sim-debug

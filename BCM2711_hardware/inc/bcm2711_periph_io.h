@@ -25,23 +25,23 @@
  * @{
  */
 
-static inline void mmio_write(void __io_memory *address, u32 value) {
+static inline void mmio_write(__io_memory void *address, u32 value) {
   dmb();
   /* Barrier before accessing peripheral memory as per datasheet */
 
-  write32(address, value);
+  write32((u64)address, value);
 
   /* Barrier after accessing peripheral memory as per datasheet */
   dmb();
 }
 
-static inline void mmio_read(void __io_memory *address, u32 value) {
+static inline u32 mmio_read(__io_memory void *address) {
   u32 value;
 
   dmb();
   /* Barrier before accessing peripheral memory as per datasheet */
 
-  value = read32(address);
+  value = read32((u64)address);
 
   /* Barrier after accessing peripheral memory as per datasheet */
   dmb();

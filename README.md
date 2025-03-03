@@ -6,6 +6,11 @@ Adapted for RPI3/RPI4
 
 Includes a custom bluetooth host stack written by me. Can be found in this repo: https://github.com/Akashem06/RPI_Bluetooth
 
+# Getting Started
+Install tools in either WSL or Linux
+
+sudo apt install qemu-system-arm
+
 # Learnings
 Major debug learning I had throughout this project. I think these are the most valuable experiences.
 

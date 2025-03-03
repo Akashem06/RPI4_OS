@@ -26,9 +26,9 @@
 /**
  * @brief   Spinlock storage
  */
-typedef struct {
+struct Spinlock {
   volatile u64 lock; /**< Stores the current state of the spinlock */
-} Spinlock;
+};
 
 /**
  * @brief   Lock the spinlock
@@ -42,8 +42,8 @@ static inline void spin_lock(struct Spinlock *lock) {
       "   cbnz %w0, 1b        \n" /* Backwards branch to local branch '1' if the lock is not 0 */
       "   mov %w0, #1         \n"
       "   stxr w2, %w0, [%1]  \n" /* Store the lock into the struct */
-      "   cbnz w2, 1b         \n"
-      : "=&r"(tmp)
+      "   cbnz w2, 1b         \n" /* Retry if the store fails */
+      : "=&r"(temp)
       : "r"(&lock->lock)
       : "memory", "w2");
 

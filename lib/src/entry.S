@@ -1,6 +1,11 @@
 // Setup vector table
 #include "entry.h"
 #include "syscalls.h"
+#include "sysregs.h"
+#include "hardware.h"
+
+.extern cpu_enable_irq
+.extern cpu_disable_irq
 
 /*
 Stack frame layout (grows downwards, SP points to base):
@@ -270,7 +275,7 @@ el0_svc:
 	adr	x27, sys_call_table
 	uxtw x26, w8
 	mov	x25, #NUM_SYSCALLS
-	bl enable_irq
+	bl cpu_enable_irq
 	cmp x26, x25
 	b.hs ni_sys
 
@@ -282,7 +287,7 @@ ni_sys:
 	handle_invalid_entry 0, SYSCALL_ERROR
 
 ret_from_syscall:
-	bl disable_irq
+	bl cpu_disable_irq
 	str	x0, [sp, #16 * 0]
 	kernel_exit 0
 
@@ -306,7 +311,7 @@ cpu_new_task:
     ret
 
 ret_to_user:
-    bl disable_irq
+    bl cpu_disable_irq
     kernel_exit 0
     
 .globl err_hang

@@ -27,4 +27,19 @@
 /** @brief  Core clock speed */
 #define CORE_CLOCK_SPEED 1500000000U
 
+#define PAGE_SHIFT 12
+#define TABLE_SHIFT 9
+#define SECTION_SHIFT (PAGE_SHIFT + TABLE_SHIFT)
+
+/** @brief  Memory page size of 4096 Kbytes */
+#define PAGE_SIZE (1U << PAGE_SHIFT)
+
+#define SECTION_SIZE (1 << SECTION_SHIFT)
+
+#define LOW_MEMORY (4 * 1024 * 1024)     // 4MB
+#define HIGH_MEMORY (256 * 1024 * 1024)  // 256MB
+
+#define PAGING_MEMORY (HIGH_MEMORY - LOW_MEMORY)
+#define PAGING_PAGES (PAGING_MEMORY / PAGE_SIZE)
+
 /** @} */

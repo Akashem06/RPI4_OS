@@ -1,13 +1,13 @@
 #include "mem.h"
 
 #include "log.h"
-#include "mm.h"
+#include "mem_utils.h"
 
 #define MAX_MANAGED_PAGES 512
 static u8 mem_map[MAX_MANAGED_PAGES] = { 0 };
 
 void *get_free_page() {
-  for (int i = 0; i < PAGING_PAGES; i++) {
+  for (u32 i = 0; i < PAGING_PAGES; i++) {
     if (mem_map[i] == 0) {
       mem_map[i] = 1;
       u64 page_addr = LOW_MEMORY + i * PAGE_SIZE;

@@ -4,7 +4,7 @@
 #include "common.h"
 #include "kernel.h"
 #include "log.h"
-#include "mm.h"
+#include "mem_utils.h"
 #include "utils.h"
 
 extern const uint8_t _binary_BCM4345C0_hcd_start[];

@@ -7,7 +7,7 @@
 #include "irq.h"
 #include "log.h"
 #include "mem.h"
-#include "mm.h"
+#include "mem_utils.h"
 #include "sysregs.h"
 #include "timer.h"
 
@@ -215,7 +215,7 @@ int scheduler_create_task(u64 clone_flags, u64 func, u64 arg, long priority) {
 
   p->cpu_context.x19 = func;
   p->cpu_context.x20 = arg;
-  p->cpu_context.sp = ((u64)p + THREAD_SIZE) & ~15ULL;
+  p->cpu_context.sp = ((u64)p + TASK_SIZE) & ~15ULL;
   p->cpu_context.lr = new_task_addr;
 
   u8 pid = num_tasks++;
@@ -248,7 +248,7 @@ int move_task_to_user_mode(u64 func) {
 
 ProcessStateRegisters *get_current_pstate(struct TaskBlock *task) {
   // We will save the ProcessStateRegisters at the top of the stack
-  u64 p = (u64)task + THREAD_SIZE - sizeof(ProcessStateRegisters);
+  u64 p = (u64)task + TASK_SIZE - sizeof(ProcessStateRegisters);
   return (ProcessStateRegisters *)p;
 }
 

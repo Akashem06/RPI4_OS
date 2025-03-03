@@ -475,7 +475,7 @@ u32 font_get_width() {
 }
 
 bool font_get_pixel(char c, u32 pos_x, u32 pos_y) {
-  if (c < FIRSTCHAR || c > LASTCHAR) {
+  if (c < FIRSTCHAR) {
     return false;
   }
 

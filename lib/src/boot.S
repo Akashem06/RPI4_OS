@@ -1,4 +1,5 @@
-#include "mm.h"
+#include "hardware.h"
+#include "mem_utils.h"
 #include "sysregs.h"
 
 .section ".text.boot"
@@ -32,8 +33,11 @@ master:
 
 el1_entry:
     // Remove rodata copy and just do BSS initialization
-    adr     x0, bss_begin
-    adr     x1, bss_end
+    adrp    x0, bss_begin
+    add     x0, x0, :lo12:bss_begin
+
+    adrp    x1, bss_end
+    add     x1, x1, :lo12:bss_end
     sub     x1, x1, x0
     bl      memzero
     

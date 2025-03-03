@@ -5,7 +5,7 @@
 #include "common.h"
 #include "dma.h"
 #include "mailbox.h"
-#include "mm.h"
+#include "mem_utils.h"
 
 #define TEXT_COLOR 0xFFFFFFFF
 #define BACK_COLOR 0xFF090909
@@ -15,10 +15,6 @@
 #define BG32_MEM_LOCATION (LOW_MEMORY + (10 * MB))
 #define BG8_MEM_LOCATION (BG32_MEM_LOCATION + (10 * MB))
 #define VB_MEM_LOCATION (BG8_MEM_LOCATION + (4 * MB))
-
-#define BUS_ADDR(x) (((u64)x | 0x40000000) & ~0xC0000000)
-#define FRAMEBUFFER ((volatile u8 *)BUS_ADDR(fb_req.buff.base))
-#define DRAWBUFFER FRAMEBUFFER
 
 typedef struct {
   MailboxTag tag;

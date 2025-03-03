@@ -2,7 +2,7 @@
 
 #include "base.h"
 #include "log.h"
-#include "mm.h"
+#include "mem_utils.h"
 
 // Stores property data sent/received from the videocore. Aligned at 16 byes as required
 static u32 property_data[8192] __attribute__((aligned(16)));
@@ -50,10 +50,11 @@ bool mailbox_process(MailboxTag *tag, u32 tag_size) {
 
   // Write the property_data buffer to Tags channel (ARM to VideoCore)
   // This initiates a write to videocore
-  mailbox_write(MAIL_TAGS, (u32)(void *)property_data);
+  mailbox_write(MAIL_TAGS, (u64)(void *)property_data);
 
   // Read back the value received from VideoCore
   int result = mailbox_read(MAIL_TAGS);
+  (void)result;
 
   // Updates the tag that we saved earlier
   memcpy(tag, property_data + 2, tag_size);
@@ -100,5 +101,5 @@ u32 mailbox_power_check(u32 type) {
 
   mailbox_process((MailboxTag *)&p, sizeof(p));
 
-  return p.state && p.state != ~0;
+  return p.state && p.state != ~0U;
 }

@@ -1,11 +1,11 @@
 #pragma once
 
-#define NUM_SYSCALLS 4U
+#define NUM_SYSCALLS 4
 
-#define SYS_WRITE_NUMBER 0U
-#define SYS_MALLOC_NUMBER 1U
-#define SYS_CREATE_TASK_NUMBER 2U
-#define SYS_EXIT_NUMBER 3U
+#define SYS_WRITE_NUMBER 0
+#define SYS_MALLOC_NUMBER 1
+#define SYS_CREATE_TASK_NUMBER 2
+#define SYS_EXIT_NUMBER 3
 
 #ifndef __ASSEMBLER__
 

@@ -915,6 +915,7 @@ INPUT                  = BCM2711_hardware \
                          utils \
                          sample \
                          RPI_Bluetooth \
+                         filesystem \
                          doxygen/main_page.md \
                          README.md \
 

@@ -4,8 +4,8 @@
 #include "hci.h"
 #include "irq.h"
 #include "log.h"
+#include "mem_utils.h"
 #include "mini_uart.h"
-#include "mm.h"
 #include "timer.h"
 #include "uart.h"
 

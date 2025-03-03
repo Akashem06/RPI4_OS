@@ -12,10 +12,10 @@ static u32 *bg8_buffer;
 
 static bool use_dma = false;
 
-#define BUS_ADDR(x) (((u64)x | 0x40000000) & ~0xC0000000)
+#define BUS_ADDR(x) (((u64)x | 0x40000000UL) & ~0xC0000000UL)
 
-#define FRAMEBUFFER ((volatile u8 *)BUS_ADDR(fb_req.buff.base))
-#define DMABUFFER ((volatile u8 *)vid_buffer)
+#define FRAMEBUFFER ((u8 *)BUS_ADDR(fb_req.buff.base))
+#define DMABUFFER ((u8 *)vid_buffer)
 #define DRAWBUFFER (use_dma ? DMABUFFER : FRAMEBUFFER)
 
 void video_init() {
@@ -107,26 +107,25 @@ void video_set_resolution(u32 xres, u32 yres, u32 bpp) {
   if (bpp == 8) {
     mailbox_process((MailboxTag *)&palette, sizeof(palette));
   }
-  char res[64];
 
-  for (int i = 0; i < 4; i++) {
+  for (u32 i = 0; i < 4; i++) {
     if (fb_req.depth.bpp == 32) {
       if (!use_dma) {
         u32 *buff = (u32 *)FRAMEBUFFER;
-        for (int i = 0; i < fb_req.buff.screen_size / 4; i++) {
+        for (u32 i = 0; i < fb_req.buff.screen_size / 4; i++) {
           buff[i] = bg32_buffer[i];
         }
       } else {
-        do_dma(BUS_ADDR(vid_buffer), bg32_buffer, fb_req.buff.screen_size);
+        do_dma((void *)BUS_ADDR(vid_buffer), bg32_buffer, fb_req.buff.screen_size);
       }
     } else if (fb_req.depth.bpp == 8) {
       if (!use_dma) {
         u32 *buff = (u32 *)FRAMEBUFFER;
-        for (int i = 0; i < fb_req.buff.screen_size / 4; i++) {
+        for (u32 i = 0; i < fb_req.buff.screen_size / 4; i++) {
           buff[i] = bg8_buffer[i];
         }
       } else {
-        do_dma(BUS_ADDR(vid_buffer), bg8_buffer, fb_req.buff.screen_size);
+        do_dma((void *)BUS_ADDR(vid_buffer), bg8_buffer, fb_req.buff.screen_size);
       }
     }
 
@@ -157,7 +156,7 @@ void video_draw_pixel(u32 x, u32 y, u32 color) {
 }
 
 void video_draw_rectangle(u32 x_start, u32 y_start, u32 width, u32 height, u32 color) {
-  u32 pixel_offset, i;
+  u32 pixel_offset;
 
   if (fb_req.depth.bpp == 32) {
     u32 *buff = (u32 *)DRAWBUFFER;
@@ -231,8 +230,8 @@ void video_draw_char(char c, u32 pos_x, u32 pos_y) {
     back_color = 1;
   }
 
-  for (int y = 0; y < font_get_height(); y++) {
-    for (int x = 0; x < font_get_width(); x++) {
+  for (u32 y = 0; y < font_get_height(); y++) {
+    for (u32 x = 0; x < font_get_width(); x++) {
       bool yes = font_get_pixel(c, x, y);
       video_draw_pixel(pos_x + x, pos_y + y, yes ? text_color : back_color);
     }
@@ -240,7 +239,7 @@ void video_draw_char(char c, u32 pos_x, u32 pos_y) {
 }
 
 void video_draw_str(char *str, u32 pos_x, u32 pos_y) {
-  for (int i = 0; str[i] != 0; pos_x += (font_get_width() + 2), i++) {
+  for (u32 i = 0; str[i] != 0; pos_x += (font_get_width() + 2), i++) {
     video_draw_char(str[i], pos_x, pos_y);
   }
 }
