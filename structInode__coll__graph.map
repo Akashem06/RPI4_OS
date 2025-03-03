@@ -1,0 +1,9 @@
+<map id="Inode" name="Inode">
+<area shape="rect" id="node1" title="Extended inode structure." alt="" coords="259,5,318,31"/>
+<area shape="rect" id="node3" href="$structDentry.html" title="Directory entry cache." alt="" coords="126,93,193,119"/>
+<area shape="rect" id="node6" href="$structSuperOperations.html" title="Superblock operations." alt="" coords="302,93,433,119"/>
+<area shape="rect" id="node2" href="$structInodeOperations.html" title="Inode operations." alt="" coords="5,181,135,207"/>
+<area shape="rect" id="node4" href="$structSuperblock.html" title="Superblock structure." alt="" coords="320,181,415,207"/>
+<area shape="rect" id="node7" href="$structMount.html" title="Mount point." alt="" coords="196,269,259,295"/>
+<area shape="rect" id="node5" href="$structFilesystemType.html" title="File system type registration." alt="" coords="387,269,510,295"/>
+</map>

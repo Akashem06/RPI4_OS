@@ -1,0 +1,4 @@
+<map id="Slab" name="Slab">
+<area shape="rect" id="node1" title="Slab object." alt="" coords="26,5,77,31"/>
+<area shape="rect" id="node2" href="$structSlabObject.html" title="Slab allocator object." alt="" coords="5,93,97,119"/>
+</map>
