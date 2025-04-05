@@ -10,9 +10,8 @@
 #define SCTLR_MMU_DISABLED (0 << 0)  // Disable memory management unit (MMU)
 #define SCTLR_MMU_ENABLED (1 << 0)   // Enable memory management unit (MMU)
 
-#define SCTLR_VALUE_MMU_DISABLED                                                               \
-  (SCTLR_RESERVED | SCTLR_EE_LITTLE_ENDIAN | SCTLR_I_CACHE_DISABLED | SCTLR_D_CACHE_DISABLED | \
-   SCTLR_MMU_DISABLED)
+#define SCTLR_VALUE_MMU_DISABLED \
+  (SCTLR_RESERVED | SCTLR_EE_LITTLE_ENDIAN | SCTLR_I_CACHE_DISABLED | SCTLR_D_CACHE_DISABLED | SCTLR_MMU_DISABLED)
 
 // HCR_EL2, Hypervisor Configuration Register (EL2), Page 2487 of AArch64-Reference-Manual
 
@@ -22,9 +21,8 @@
 // SCR_EL3, Secure Configuration Register (EL3), Page 2648 of AArch64-Reference-Manual
 
 #define SCR_RESERVED (3 << 4)  //
-#define SCR_RW \
-  (1 << 10)  // When this is set to 0, EL3 is in AArch32, when it is set to 1, EL3 is in AArch64
-#define SCR_NS (1 << 0)  // When 0 EL0 and EL1 are in secure state
+#define SCR_RW (1 << 10)       // When this is set to 0, EL3 is in AArch32, when it is set to 1, EL3 is in AArch64
+#define SCR_NS (1 << 0)        // When 0 EL0 and EL1 are in secure state
 #define SCR_VALUE (SCR_RESERVED | SCR_RW | SCR_NS)
 
 // SPSR_EL3, Saved Program Status Register (EL3) Page 389 of AArch64-Reference-Manual

@@ -10,12 +10,12 @@ INC_DIRS    := lib/inc utils/inc drivers/inc kernel/inc RPI_Bluetooth/inc BCM271
 BCM4345C0_DIR := BCM4345C0
 
 # Simulation in QEMU
-QEMU      := qemu-system-aarch64
-QEMU_FLAGS := -M raspi4b -cpu cortex-a72 -kernel $(BUILD_DIR)/kernel8.img -serial stdio
+QEMU      	:= qemu-system-aarch64
+QEMU_FLAGS 	:= -M raspi4b -cpu cortex-a72 -smp 4 -m 2G -kernel $(BUILD_DIR)/kernel8.img -serial stdio -display none -d int,mmu
 
 # Compiler and linker flags
-WARNINGS     := -Wall -Wextra -Werror
-COMMON_FLAGS := -DRPI_VERSION=$(RPI_VERSION) $(WARNINGS) -nostdlib -nostartfiles -ffreestanding -mgeneral-regs-only -march=armv8-a
+WARNINGS     := -Wall -Wextra -Werror -Wno-unused-function -Wno-unused-variable -Wno-unused-parameter
+COMMON_FLAGS := -DRPI_VERSION=$(RPI_VERSION) $(WARNINGS) -nostdlib -nostartfiles -ffreestanding -mgeneral-regs-only -march=armv8-a -g -O0
 C_FLAGS      := $(COMMON_FLAGS) $(addprefix -I,$(INC_DIRS))
 ASM_FLAGS    := $(COMMON_FLAGS) $(addprefix -I,$(INC_DIRS))
 LD_FLAGS     := 

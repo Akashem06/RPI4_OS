@@ -101,8 +101,8 @@ void spi_recv(u8 chip_select, u8 *data, u32 size) {
 }
 
 void spi_set_mode(u8 cpol, u8 cpha) {
-  SPI0_REGS->cs = (SPI0_REGS->cs & ~(1 << CS_CPOL_SHIFT | 1 << CS_CPHA_SHIFT)) |
-                  (cpol << CS_CPOL_SHIFT) | (cpha << CS_CPHA_SHIFT);
+  SPI0_REGS->cs =
+      (SPI0_REGS->cs & ~(1 << CS_CPOL_SHIFT | 1 << CS_CPHA_SHIFT)) | (cpol << CS_CPOL_SHIFT) | (cpha << CS_CPHA_SHIFT);
 }
 
 void spi_set_clock_divider(u32 divider) {

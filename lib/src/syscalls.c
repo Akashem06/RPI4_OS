@@ -28,5 +28,4 @@ void sys_call_exit() {
   scheduler_exit_task();
 }
 
-void *const sys_call_table[] = { sys_call_write, sys_call_malloc, sys_call_clone_task,
-                                 sys_call_exit };
+void *const sys_call_table[] = { sys_call_write, sys_call_malloc, sys_call_clone_task, sys_call_exit };

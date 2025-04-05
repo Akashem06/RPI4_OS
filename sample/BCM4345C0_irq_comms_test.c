@@ -9,9 +9,7 @@
 #include "timer.h"
 #include "uart.h"
 
-UartSettings test_bt_settings = {
-  .uart = UART0, .cts = 30, .rts = 31, .tx = 32, .rx = 33, .bluetooth = true
-};
+UartSettings test_bt_settings = { .uart = UART0, .cts = 30, .rts = 31, .tx = 32, .rx = 33, .bluetooth = true };
 
 /* State machine states */
 typedef enum { STATE_IDLE, STATE_WAIT_RESET, STATE_WAIT_VERSION, STATE_COMPLETE } TestState;
@@ -79,8 +77,7 @@ static void process_hci_event(void) {
   uint8_t param_len = rx_buffer[rx_read_idx + 2];
 
   // Wait for complete event
-  if ((rx_write_idx - rx_read_idx + sizeof(rx_buffer)) % sizeof(rx_buffer) < (3 + param_len))
-    return;
+  if ((rx_write_idx - rx_read_idx + sizeof(rx_buffer)) % sizeof(rx_buffer) < (3 + param_len)) return;
 
   // Process Command Complete event
   if (event_code == 0x0E) {
@@ -97,8 +94,7 @@ static void process_hci_event(void) {
       version_info.hci_revision = rx_buffer[rx_read_idx + 8] | (rx_buffer[rx_read_idx + 9] << 8);
       version_info.lmp_version = rx_buffer[rx_read_idx + 10];
       version_info.manufacturer = rx_buffer[rx_read_idx + 11] | (rx_buffer[rx_read_idx + 12] << 8);
-      version_info.lmp_subversion =
-          rx_buffer[rx_read_idx + 13] | (rx_buffer[rx_read_idx + 14] << 8);
+      version_info.lmp_subversion = rx_buffer[rx_read_idx + 13] | (rx_buffer[rx_read_idx + 14] << 8);
     }
   }
 

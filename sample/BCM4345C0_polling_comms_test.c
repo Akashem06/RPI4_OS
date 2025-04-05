@@ -118,9 +118,7 @@ void kernel_main() {
   log_init(LOG_MODE_MINIUART);
   log("Starting Bluetooth test...\r\n");
 
-  UartSettings bt_settings = {
-    .uart = UART0, .cts = 30, .rts = 31, .tx = 32, .rx = 33, .bluetooth = true
-  };
+  UartSettings bt_settings = { .uart = UART0, .cts = 30, .rts = 31, .tx = 32, .rx = 33, .bluetooth = true };
 
   log("Initializing UART...\r\n");
   uart_init(&bt_settings);

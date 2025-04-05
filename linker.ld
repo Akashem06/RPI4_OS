@@ -29,9 +29,9 @@ SECTIONS {
     
     /* No alignment between data and bss to keep them close */
     .bss : {
-        bss_begin = .;
+        __bss_begin = .;
         *(.bss*)
         . = ALIGN(8);
-        bss_end = .;
+        __bss_end = .;
     }
 }

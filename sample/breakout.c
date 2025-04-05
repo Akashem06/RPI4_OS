@@ -107,8 +107,7 @@ void init_paddle() {
   u32 paddle_width = PADDLE_WIDTH;
   u32 paddle_height = PADDLE_HEIGHT;
 
-  video_draw_rectangle((WIDTH - paddle_width) / 2, HEIGHT - PADDING - paddle_height, paddle_width,
-                       paddle_height, 0x550055);
+  video_draw_rectangle((WIDTH - paddle_width) / 2, HEIGHT - PADDING - paddle_height, paddle_width, paddle_height, 0x550055);
 
   objects[numobjs].type = OBJ_PADDLE;
   objects[numobjs].x = (WIDTH - paddle_width) / 2;
@@ -136,10 +135,8 @@ Object *detect_collision(Object *with, int xoff, int yoff) {
   for (u32 i = 0; i < numobjs; i++) {
     if (&objects[i] != with && objects[i].alive == 1) {
       // Check for overlap
-      if (with->x + xoff < objects[i].x + objects[i].width &&
-          with->x + xoff + with->width > objects[i].x &&
-          with->y + yoff < objects[i].y + objects[i].height &&
-          with->y + yoff + with->height > objects[i].y) {
+      if (with->x + xoff < objects[i].x + objects[i].width && with->x + xoff + with->width > objects[i].x &&
+          with->y + yoff < objects[i].y + objects[i].height && with->y + yoff + with->height > objects[i].y) {
         return &objects[i];
       }
     }
@@ -186,7 +183,8 @@ void kernel_init(int points, int lives) {
   enable_interrupt_controller();
   irq_enable();
 
-  while (!get_uart());
+  while (!get_uart())
+    ;
 }
 
 void kernel_main() {
@@ -232,10 +230,8 @@ void kernel_main() {
       } else if (found_object->type == OBJ_BRICK) {
         remove_object(found_object);
 
-        if ((ball->x + ball->width <= found_object->x &&
-             velocity_x > 0) ||  // Hitting from left side
-            (ball->x >= found_object->x + found_object->width &&
-             velocity_x < 0)) {  // Hitting from right side
+        if ((ball->x + ball->width <= found_object->x && velocity_x > 0) ||          // Hitting from left side
+            (ball->x >= found_object->x + found_object->width && velocity_x < 0)) {  // Hitting from right side
           velocity_x = -velocity_x;
         } else {
           velocity_y = -velocity_y;  // Reverse Y velocity

@@ -110,14 +110,15 @@ void scheduler_exit_task();
 ProcessStateRegisters *get_current_pstate(struct TaskBlock *task);
 void cpu_context_switch(struct TaskBlock *prev, struct TaskBlock *next);
 
-#define INIT_TASK /* CpuContext */             \
-  { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, \
-    0, /* state */                             \
-    0, /* counter */                           \
-    1, /* priority */                          \
-    0, /* preempt_count */                     \
-    0, /* stack */                             \
-    0 /* flags */ }
+#define INIT_TASK /* CpuContext */                                    \
+  {                                                                   \
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, 0, /* state */         \
+        0,                                        /* counter */       \
+        1,                                        /* priority */      \
+        0,                                        /* preempt_count */ \
+        0,                                        /* stack */         \
+        0                                         /* flags */         \
+  }
 
 #endif
 

@@ -47,7 +47,8 @@ DmaChannel *dma_open_channel(u32 channel) {
 
   // Waits for channel to reset so all errors/transactions are cleared
   DMA_REGS(dma->channel)->control |= CS_RESET;
-  while (DMA_REGS(dma->channel)->control & CS_RESET);
+  while (DMA_REGS(dma->channel)->control & CS_RESET)
+    ;
 
   return dma;
 }
@@ -57,21 +58,19 @@ void dma_close_channel(DmaChannel *channel) {
 }
 
 void dma_setup_mem_copy(DmaChannel *channel, void *dest, void *src, u32 length, u32 burst_length) {
-  channel->block->transfer_info =
-      (burst_length << TI_BURST_LENGTH_SHIFT)  // How many data words shuold be sent in 1 burst,
-                                               // important for speed
-      | TI_SRC_WIDTH                           // Data width (the word size) for source address
-      | TI_SRC_INC                             // src memory will increment with each word write
-      | TI_DEST_WIDTH                          // Data width (the word size) for dest address
-      | TI_DEST_INC;                           // dest memory will increment with each word write
+  channel->block->transfer_info = (burst_length << TI_BURST_LENGTH_SHIFT)  // How many data words shuold be sent in 1 burst,
+                                                                           // important for speed
+                                  | TI_SRC_WIDTH                           // Data width (the word size) for source address
+                                  | TI_SRC_INC                             // src memory will increment with each word write
+                                  | TI_DEST_WIDTH                          // Data width (the word size) for dest address
+                                  | TI_DEST_INC;                           // dest memory will increment with each word write
 
   channel->block->src_addr = (u64)src;
   channel->block->dest_addr = (u64)dest;
   channel->block->transfer_length = length;
   channel->block->mode_2d_stride =
       0;  // 2d stride refers to how memory is copied. 1 means we copy memory in rows and columns
-  channel->block->next_block_addr =
-      0;  // There is no next block to chain to (once one is complete the next will not run)
+  channel->block->next_block_addr = 0;  // There is no next block to chain to (once one is complete the next will not run)
 }
 
 void dma_start(DmaChannel *channel) {
@@ -89,7 +88,8 @@ void dma_start(DmaChannel *channel) {
 
 bool dma_wait(DmaChannel *channel) {
   // Waits for the channel to no longer be active
-  while (DMA_REGS(channel->channel)->control & CS_ACTIVE);
+  while (DMA_REGS(channel->channel)->control & CS_ACTIVE)
+    ;
 
   // Determines the channel's status by checking the control error register
   channel->status = DMA_REGS(channel->channel)->control & CS_ERROR ? false : true;

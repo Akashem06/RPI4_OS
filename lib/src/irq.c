@@ -21,10 +21,8 @@ const char entry_error_messages[17][32] = {
   "SYSCALL_ERROR",
 };
 
-void show_invalid_entry_message(u32 type, u64 esr, u64 address, u64 fault_addr_reg,
-                                u64 stack_pointer) {
-  log("ERROR CAUGHT: %s - %d. ESR: %d Address: %d\r\n", entry_error_messages[type], type, esr,
-      address);
+void show_invalid_entry_message(u32 type, u64 esr, u64 address, u64 fault_addr_reg, u64 stack_pointer) {
+  log("ERROR CAUGHT: %s - %d. ESR: %d Address: %d\r\n", entry_error_messages[type], type, esr, address);
   for (int i = 0; i < CLOCK_HZ; i++) {
     __asm("NOP");
   }
@@ -45,14 +43,13 @@ void enable_interrupt_controller() {
   IRQ_REGS->irq0_disable_2 = 0xFFFFFFFF;
 
   // Enable basic GPU0 interrupts
-  IRQ_REGS->irq0_enable_0 = IRQ_TIMER_0 | IRQ_TIMER_1 | IRQ_TIMER_2 | IRQ_TIMER_3 | IRQ_CODEC_0 |
-                            IRQ_CODEC_1 | IRQ_CODEC_2 | IRQ_JPEG | IRQ_ISP | IRQ_USB | IRQ_3D |
-                            IRQ_DMA_0 | IRQ_AUX;
+  IRQ_REGS->irq0_enable_0 = IRQ_TIMER_0 | IRQ_TIMER_1 | IRQ_TIMER_2 | IRQ_TIMER_3 | IRQ_CODEC_0 | IRQ_CODEC_1 | IRQ_CODEC_2 |
+                            IRQ_JPEG | IRQ_ISP | IRQ_USB | IRQ_3D | IRQ_DMA_0 | IRQ_AUX;
 
   // Enable GPU1 interrupts
-  IRQ_REGS->irq0_enable_1 = IRQ_I2C_SPI_SLV | IRQ_PWA0 | IRQ_PWA1 | IRQ_SMI | IRQ_GPIO_0 |
-                            IRQ_GPIO_1 | IRQ_GPIO_2 | IRQ_GPIO_3 | IRQ_I2C | IRQ_SPI | IRQ_PCM |
-                            IRQ_UART_0 | IRQ_UART_2 | IRQ_UART_3 | IRQ_UART_4 | IRQ_UART_5;
+  IRQ_REGS->irq0_enable_1 = IRQ_I2C_SPI_SLV | IRQ_PWA0 | IRQ_PWA1 | IRQ_SMI | IRQ_GPIO_0 | IRQ_GPIO_1 | IRQ_GPIO_2 |
+                            IRQ_GPIO_3 | IRQ_I2C | IRQ_SPI | IRQ_PCM | IRQ_UART_0 | IRQ_UART_2 | IRQ_UART_3 | IRQ_UART_4 |
+                            IRQ_UART_5;
 #elif RPI_VERSION == 3
   IRQ_REGS->irq0_enable_1 |= AUX_IRQ;
 #endif

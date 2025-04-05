@@ -26,9 +26,9 @@ struct Superblock; /**< Represents a mounted filesystem's control info */
  * @brief   File system type registration
  */
 struct FilesystemType {
-  const char *name; /**< File system name */
+  const char *name;                                                                 /**< File system name */
   struct Superblock *(*mount)(struct FilesystemType *, const char *, const void *); /**< */
-  void (*kill_sb)(struct Superblock *); /**< Delete and cleanup superblock */
+  void (*kill_sb)(struct Superblock *);                                             /**< Delete and cleanup superblock */
   struct FilesystemType *next;
 };
 
@@ -117,8 +117,7 @@ int register_filesystem(struct FilesystemType *fs_type);
 int unregister_filesystem(struct FilesystemType *fs_type);
 
 /* Mount Operations */
-struct Mount *do_mount(const char *dev_name, const char *dir_name, const char *type,
-                       unsigned long flags);
+struct Mount *do_mount(const char *dev_name, const char *dir_name, const char *type, unsigned long flags);
 int do_umount(struct Mount *mnt);
 
 /* Path Resolution */

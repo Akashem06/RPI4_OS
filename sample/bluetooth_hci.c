@@ -1,11 +1,10 @@
-#include "kernel.h"
-
 #include <stdint.h>
 
 #include "common.h"
 #include "hci.h"
 #include "hci_defs.h"
 #include "irq.h"
+#include "kernel.h"
 #include "log.h"
 #include "timer.h"
 #include "utils.h"
@@ -75,15 +74,14 @@ void kernel_main() {
   // Configure advertising parameters
   uint8_t dummy_addr[6] = { 0, 0, 0, 0, 0, 0 };
 
-  status = HCI_BLE_set_advertising_param(
-      100,                                              /*! min interval (100ms) */
-      100,                                              /*! max interval (100ms) */
-      ADV_TYPE_UNDIRECT_CONN,                           /*! connectable undirected advertising */
-      ADV_OWN_ADDR_PUBLIC,                              /*! own address type */
-      ADV_DIR_ADDR_PUBLIC,                              /*! direct address type */
-      dummy_addr,                                       /*! direct address */
-      ADV_CHANNEL_37 | ADV_CHANNEL_38 | ADV_CHANNEL_39, /*! all channels */
-      ADV_FILTER_POLICY_ALLOW_ALL                       /*! no filtering */
+  status = HCI_BLE_set_advertising_param(100,                    /*! min interval (100ms) */
+                                         100,                    /*! max interval (100ms) */
+                                         ADV_TYPE_UNDIRECT_CONN, /*! connectable undirected advertising */
+                                         ADV_OWN_ADDR_PUBLIC,    /*! own address type */
+                                         ADV_DIR_ADDR_PUBLIC,    /*! direct address type */
+                                         dummy_addr,             /*! direct address */
+                                         ADV_CHANNEL_37 | ADV_CHANNEL_38 | ADV_CHANNEL_39, /*! all channels */
+                                         ADV_FILTER_POLICY_ALLOW_ALL                       /*! no filtering */
   );
 
   if (status != HCI_ERROR_SUCCESS) {

@@ -57,11 +57,10 @@ static inline void spin_lock(struct Spinlock *lock) {
 static inline void spin_unlock(struct Spinlock *lock) {
   dmb();
 
-  asm volatile(
-      "stlr    wzr, [%0]     \n" /* Ensures everything is completed before setting the lock to 0 */
-      :
-      : "r"(&lock->lock)
-      : "memory");
+  asm volatile("stlr    wzr, [%0]     \n" /* Ensures everything is completed before setting the lock to 0 */
+               :
+               : "r"(&lock->lock)
+               : "memory");
 }
 
 /** @} */

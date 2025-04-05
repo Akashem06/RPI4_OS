@@ -9,12 +9,14 @@ bool uart_read_ready() {
 }
 
 void uart_transmit(char c) {
-  while (config->uart->fr & (1 << 5));  // Wait until TX FIFO is not full
+  while (config->uart->fr & (1 << 5))
+    ;  // Wait until TX FIFO is not full
   config->uart->dr = c;
 }
 
 char uart_receive() {
-  while (config->uart->fr & (1 << 4));  // Wait until RX FIFO is not empty
+  while (config->uart->fr & (1 << 4))
+    ;  // Wait until RX FIFO is not empty
   return config->uart->dr & 0xFF;
 }
 
@@ -63,8 +65,7 @@ void uart_init(UartSettings *settings) {
       // TODO: Add functionality for pins 36/37. Right now they initalized wrong
       gpio_set_function(config->tx, GF_ALT0);
       gpio_set_function(config->rx, GF_ALT0);
-    } else if (config->uart == UART2 || config->uart == UART3 || config->uart == UART4 ||
-               config->uart == UART5) {
+    } else if (config->uart == UART2 || config->uart == UART3 || config->uart == UART4 || config->uart == UART5) {
       gpio_set_function(config->tx, GF_ALT4);
       gpio_set_function(config->rx, GF_ALT4);
     }
@@ -84,7 +85,6 @@ void uart_init(UartSettings *settings) {
 
     config->uart->lcrh = (1 << 4) | (1 << 5) | (1 << 6);  // 8 bits, no parity, 1 stop bit
     config->uart->imsc = (1 << 4);                        // Sets RX ISR
-    config->uart->cr = (1 << 0) | (1 << 8) |
-                       (1 << 9);  // Enable UART, TX, and RX. TODO: Add more functions? Loopback?
+    config->uart->cr = (1 << 0) | (1 << 8) | (1 << 9);    // Enable UART, TX, and RX. TODO: Add more functions? Loopback?
   }
 }
