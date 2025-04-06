@@ -5,8 +5,8 @@ ARMGNU ?= aarch64-linux-gnu
 BUILD_DIR    := build
 OBJ_DIR     := $(BUILD_DIR)/obj
 DEP_DIR     := $(BUILD_DIR)/dep
-SRC_DIRS    := lib/src utils/src drivers/src kernel/src RPI_Bluetooth/src BCM2711_hardware/src filesystem/src
-INC_DIRS    := lib/inc utils/inc drivers/inc kernel/inc RPI_Bluetooth/inc BCM2711_hardware/inc filesystem/inc
+SRC_DIRS    := lib/src utils/src drivers/src kernel/src RPI_Bluetooth/src BCM2711_hardware/src filesystem/src mm/src
+INC_DIRS    := lib/inc utils/inc drivers/inc kernel/inc RPI_Bluetooth/inc BCM2711_hardware/inc filesystem/inc mm/inc
 BCM4345C0_DIR := BCM4345C0
 
 # Simulation in QEMU

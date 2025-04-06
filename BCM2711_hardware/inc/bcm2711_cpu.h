@@ -25,6 +25,17 @@
  * @{
  */
 
+extern u64 __heap_start;
+extern u64 __heap_end;
+extern u64 __low_memory;
+extern u64 __high_memory;
+
+#define LOW_MEMORY ((u64) & __low_memory)
+#define HIGH_MEMORY ((u64) & __high_memory)
+
+#define PAGING_MEMORY (HIGH_MEMORY - LOW_MEMORY)
+#define PAGING_PAGES (PAGING_MEMORY / PAGE_SIZE)
+
 /**
  * @brief   Get the current CPU ID (0-3 on RPi4)
  * @return  CPU ID (0-3)

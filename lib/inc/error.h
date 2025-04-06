@@ -46,15 +46,16 @@ typedef enum {
   /* Memory errors */
   ERR_MEM_OUT_OF_MEMORY = -15, /**< Out of memory */
   ERR_MEM_INVALID_ADDR = -16,  /**< Invalid address */
+  ERR_MEM_INIT_FAILED = -17,
 
   /* IPC errors */
-  ERR_IPC_PIPE = -17,  /**< Broken pipe */
-  ERR_IPC_AGAIN = -18, /**< Resource temporarily unavailable */
+  ERR_IPC_PIPE = -18,  /**< Broken pipe */
+  ERR_IPC_AGAIN = -19, /**< Resource temporarily unavailable */
 
   /* System errors */
-  ERR_SYS_INTERRUPTED = -19,   /**< System call interrupted */
-  ERR_SYS_NOT_SUPPORTED = -20, /**< Operation not supported */
-  ERR_SYS_INVALID_OP = -21,    /**< Invalid operation */
+  ERR_SYS_INTERRUPTED = -20,   /**< System call interrupted */
+  ERR_SYS_NOT_SUPPORTED = -21, /**< Operation not supported */
+  ERR_SYS_INVALID_OP = -22,    /**< Invalid operation */
 } ErrorCode;
 
 /**

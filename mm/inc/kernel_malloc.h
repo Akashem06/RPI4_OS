@@ -3,23 +3,26 @@
 /*******************************************************************************************************************************
  * @file   kernel_malloc.h
  *
- * @brief  Kernel memory allocation
+ * @brief  Kernel memory allocation header file
  *
- * @date   2024-12-27
+ * @date   2025-04-07
  * @author Aryan Kashem
  *******************************************************************************************************************************/
 
 /* Standard library Headers */
+#include <stdbool.h>
 #include <stddef.h>
 
 /* Inter-component Headers */
+#include "common.h"
 #include "error.h"
+#include "hardware.h"
 
 /* Intra-component Headers */
 
 /**
- * @defgroup KernelMalloc Kernel Memory Allocator
- * @brief    Kernel Memory Allocator using Buddy Allocator and Slab Allocator
+ * @defgroup MemoryManager OS Memory Manager
+ * @brief    OS Memory Manager using Buddy Allocator and Slab Allocator
  * @{
  */
 

@@ -38,13 +38,13 @@
 #define S_FILETYPE_BLOCK_DEVICE 0060000     /**< Block device */
 
 /** @brief  True if it is a regular file */
-#define S_IS_REG_FILE(m) (((m)&S_FILETYPE_BITFIELD) == S_FILETYPE_REGULAR)
+#define S_IS_REG_FILE(m) (((m) & S_FILETYPE_BITFIELD) == S_FILETYPE_REGULAR)
 /** @brief  True if it is a directory file */
-#define S_IS_DIR_FILE(m) (((m)&S_FILETYPE_BITFIELD) == S_FILETYPE_DIRECTORY)
+#define S_IS_DIR_FILE(m) (((m) & S_FILETYPE_BITFIELD) == S_FILETYPE_DIRECTORY)
 /** @brief  True if it is a character device file */
-#define S_IS_CHR_FILE(m) (((m)&S_FILETYPE_BITFIELD) == S_FILETYPE_CHARACTER_DEVICE)
+#define S_IS_CHR_FILE(m) (((m) & S_FILETYPE_BITFIELD) == S_FILETYPE_CHARACTER_DEVICE)
 /** @brief  True if it is a block device file */
-#define S_IS_BLK_FILE(m) (((m)&S_FILETYPE_BITFIELD) == S_FILETYPE_BLOCK_DEVICE)
+#define S_IS_BLK_FILE(m) (((m) & S_FILETYPE_BITFIELD) == S_FILETYPE_BLOCK_DEVICE)
 
 /**
  * @brief   Permission Bits (stored in file_metadata)

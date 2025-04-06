@@ -3,8 +3,7 @@
 #include "gpio.h"
 
 void mini_uart_transmit(char c) {
-  while (!(AUX_REGS->mu_lsr & 0x20))
-    ;  // Checks if transmitter empty
+  while (!(AUX_REGS->mu_lsr & 0x20));  // Checks if transmitter empty
 
   AUX_REGS->mu_io = c;
 }
@@ -21,8 +20,7 @@ void mini_uart_transmit_string(char *str) {
 }
 
 char mini_uart_receive() {
-  while (!(AUX_REGS->mu_lsr & 0x1))
-    ;  // Checks if transmitter empty
+  while (!(AUX_REGS->mu_lsr & 0x1));  // Checks if transmitter empty
 
   return AUX_REGS->mu_io & 0xFF;
 }

@@ -183,8 +183,7 @@ void kernel_init(int points, int lives) {
   enable_interrupt_controller();
   irq_enable();
 
-  while (!get_uart())
-    ;
+  while (!get_uart());
 }
 
 void kernel_main() {

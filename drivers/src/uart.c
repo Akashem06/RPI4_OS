@@ -9,14 +9,12 @@ bool uart_read_ready() {
 }
 
 void uart_transmit(char c) {
-  while (config->uart->fr & (1 << 5))
-    ;  // Wait until TX FIFO is not full
+  while (config->uart->fr & (1 << 5));  // Wait until TX FIFO is not full
   config->uart->dr = c;
 }
 
 char uart_receive() {
-  while (config->uart->fr & (1 << 4))
-    ;  // Wait until RX FIFO is not empty
+  while (config->uart->fr & (1 << 4));  // Wait until RX FIFO is not empty
   return config->uart->dr & 0xFF;
 }
 

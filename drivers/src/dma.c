@@ -47,8 +47,7 @@ DmaChannel *dma_open_channel(u32 channel) {
 
   // Waits for channel to reset so all errors/transactions are cleared
   DMA_REGS(dma->channel)->control |= CS_RESET;
-  while (DMA_REGS(dma->channel)->control & CS_RESET)
-    ;
+  while (DMA_REGS(dma->channel)->control & CS_RESET);
 
   return dma;
 }
@@ -88,8 +87,7 @@ void dma_start(DmaChannel *channel) {
 
 bool dma_wait(DmaChannel *channel) {
   // Waits for the channel to no longer be active
-  while (DMA_REGS(channel->channel)->control & CS_ACTIVE)
-    ;
+  while (DMA_REGS(channel->channel)->control & CS_ACTIVE);
 
   // Determines the channel's status by checking the control error register
   channel->status = DMA_REGS(channel->channel)->control & CS_ERROR ? false : true;

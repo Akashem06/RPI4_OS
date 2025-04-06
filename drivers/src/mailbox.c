@@ -15,8 +15,7 @@ MailboxRegisters *MBX() {
 /** @brief Polls mailbox write. Will block until mailbox is not full.
 The first 4 bits are reserved for channel number, the remainder are data */
 static void mailbox_write(u8 channel, u32 data) {
-  while (MBX()->status & MAIL_FULL)
-    ;
+  while (MBX()->status & MAIL_FULL);
 
   MBX()->write = (data & 0xFFFFFFF0) | (channel & 0xF);
 }
@@ -25,8 +24,7 @@ static void mailbox_write(u8 channel, u32 data) {
  * the channel */
 static u32 mailbox_read(u8 channel) {
   while (true) {
-    while (MBX()->status & MAIL_EMPTY)
-      ;
+    while (MBX()->status & MAIL_EMPTY);
     u32 data = MBX()->read;
     u8 read_channel = (u8)(data & 0xF);
 
