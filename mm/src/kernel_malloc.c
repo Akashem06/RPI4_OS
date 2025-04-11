@@ -11,6 +11,7 @@
 
 /* Inter-component Headers */
 #include "mem_utils.h"
+#include "spinlock.h"
 
 /* Intra-component Headers */
 #include "kernel_malloc.h"
@@ -38,6 +39,7 @@ struct DirectAllocMap {
 static struct DirectAllocMap *direct_alloc_hash[DIRECT_ALLOC_HASH_SIZE];
 
 bool kmalloc_initialized = false;
+static struct Spinlock kmalloc_lock = SPIN_LOCK_INIT;
 
 /**
  * @brief   Get hash bucket for a pointer
@@ -170,11 +172,16 @@ static ErrorCode kmalloc_init(void) {
     return SUCCESS;
   }
 
+  spin_lock(&kmalloc_lock);
+
   for (u32 i = 0; i < DIRECT_ALLOC_HASH_SIZE; i++) {
     direct_alloc_hash[i] = NULL;
   }
 
   kmalloc_initialized = true;
+
+  spin_unlock(&kmalloc_lock);
+
   return SUCCESS;
 }
 
@@ -191,11 +198,19 @@ void *kmalloc(size_t size) {
     }
   }
 
+  spin_lock(&kmalloc_lock);
+
+  void *result = NULL;
+
   if (size > MAX_SLAB_SIZE) {
-    return direct_alloc(size);
+    result = direct_alloc(size);
   } else {
-    return slab_alloc(size);
+    result = slab_alloc(size);
   }
+
+  spin_unlock(&kmalloc_lock);
+
+  return result;
 }
 
 void kfree(void *ptr) {
@@ -203,18 +218,28 @@ void kfree(void *ptr) {
     return;
   }
 
+  spin_lock(&kmalloc_lock);
+
   struct DirectAllocMap *map = find_direct_alloc(ptr);
   if (map) {
     direct_free(ptr);
   } else {
     slab_free(ptr);
   }
+
+  spin_unlock(&kmalloc_lock);
 }
 
 void *kzalloc(size_t size) {
   void *ptr = kmalloc(size);
+
+  spin_lock(&kmalloc_lock);
+
   if (ptr) {
     memzero((u64)ptr, size);
   }
+
+  spin_unlock(&kmalloc_lock);
+
   return ptr;
 }

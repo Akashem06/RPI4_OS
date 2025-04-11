@@ -30,37 +30,18 @@ struct Spinlock {
   volatile u64 lock; /**< Stores the current state of the spinlock */
 };
 
-/**
- * @brief   Lock the spinlock
- * @param   lock Pointer to a spinlock struct
- */
-static inline void spin_lock(struct Spinlock *lock) {
-  u64 temp;
-
-  asm volatile(
-      "1: ldaxr %w0, [%1]     \n"
-      "   cbnz %w0, 1b        \n" /* Backwards branch to local branch '1' if the lock is not 0 */
-      "   mov %w0, #1         \n"
-      "   stxr w2, %w0, [%1]  \n" /* Store the lock into the struct */
-      "   cbnz w2, 1b         \n" /* Retry if the store fails */
-      : "=&r"(temp)
-      : "r"(&lock->lock)
-      : "memory", "w2");
-
-  dmb();
-}
+#define SPIN_LOCK_INIT {0U}
 
 /**
- * @brief   Unlock the spinlock
+ * @brief   Lock the spinlock (architecture-specific implementation)
  * @param   lock Pointer to a spinlock struct
  */
-static inline void spin_unlock(struct Spinlock *lock) {
-  dmb();
+void spin_lock(struct Spinlock *lock);
 
-  asm volatile("stlr    wzr, [%0]     \n" /* Ensures everything is completed before setting the lock to 0 */
-               :
-               : "r"(&lock->lock)
-               : "memory");
-}
+/**
+ * @brief   Unlock the spinlock (architecture-specific implementation)
+ * @param   lock Pointer to a spinlock struct
+ */
+void spin_unlock(struct Spinlock *lock);
 
 /** @} */

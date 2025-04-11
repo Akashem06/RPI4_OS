@@ -12,12 +12,15 @@
 #include <stddef.h>
 
 /* Inter-component Headers */
-#include "bcm2711.h"
+#include "hardware.h"
 #include "common.h"
 #include "error.h"
+#include "spinlock.h"
 
 /* Intra-component Headers */
 #include "slab.h"
+
+static struct Spinlock slab_alloc_lock = SPIN_LOCK_INIT;
 
 static struct Slab *slab_caches[SLAB_SIZES]; /* Slab caches for different sizes */
 
@@ -108,6 +111,8 @@ void *alloc_header(u32 size) {
 }
 
 ErrorCode slab_init(void) {
+  spin_lock(&slab_alloc_lock);
+
   if (slab_initialized) {
     return SUCCESS;
   }
@@ -136,6 +141,9 @@ ErrorCode slab_init(void) {
   header_pool_used = 0;
 
   slab_initialized = true;
+
+  spin_unlock(&slab_alloc_lock);
+
   return SUCCESS;
 }
 
@@ -145,6 +153,8 @@ void *slab_alloc(u32 size) {
       return NULL;
     }
   }
+
+  spin_lock(&slab_alloc_lock);
 
   if (size == 0) {
     return NULL;
@@ -193,10 +203,14 @@ void *slab_alloc(u32 size) {
   slab->free_list = obj->next_free;
   slab->free_objects--;
 
+  spin_unlock(&slab_alloc_lock);
+
   return (void *)((u64)obj + sizeof(struct SlabObject));
 }
 
 void slab_free(void *ptr) {
+  spin_lock(&slab_alloc_lock);
+
   if (ptr == NULL) {
     return;
   }
@@ -219,6 +233,8 @@ void slab_free(void *ptr) {
   obj->next_free = slab->free_list;
   slab->free_list = obj;
   slab->free_objects++;
+
+  spin_unlock(&slab_alloc_lock);
 
   /* TODO: If slab is entirely free, could return pages to the system */
 }

@@ -1,5 +1,4 @@
 #include "kernel.h"
-
 #include "kernel_malloc.h"
 #include "log.h"
 #include "mem_utils.h"

@@ -10,9 +10,13 @@
 /* Standard library Headers */
 
 /* Inter-component Headers */
+#include "spinlock.h"
 
 /* Intra-component Headers */
 #include "buddy.h"
+
+static struct Spinlock buddy_alloc_lock = SPIN_LOCK_INIT;
+static int recursion_depth = 0;
 
 static struct Page *free_lists[MAX_ORDER + 1U]; /* Free lists for each order */
 static bool buddy_initialized = false;
@@ -38,6 +42,8 @@ ErrorCode buddy_init(void) {
       return ERR_MEM_INIT_FAILED;
     }
   }
+
+  spin_lock(&buddy_alloc_lock);
 
   for (u32 i = 0U; i <= MAX_ORDER; i++) {
     free_lists[i] = NULL;
@@ -70,6 +76,9 @@ ErrorCode buddy_init(void) {
   }
 
   buddy_initialized = true;
+
+  spin_unlock(&buddy_alloc_lock);
+
   return SUCCESS;
 }
 
@@ -84,6 +93,8 @@ struct Page *buddy_alloc_pages(u32 order) {
     return NULL;
   }
 
+  spin_lock(&buddy_alloc_lock);
+
   /* Check if we have a block of the right size */
   if (free_lists[order] != NULL) {
     struct Page *page = free_lists[order];
@@ -91,6 +102,7 @@ struct Page *buddy_alloc_pages(u32 order) {
     page->is_free = false;
     page->next = NULL;
     page->_count = 1; /* Set reference count */
+    spin_unlock(&buddy_alloc_lock);
     return page;
   }
 
@@ -99,10 +111,13 @@ struct Page *buddy_alloc_pages(u32 order) {
     if (free_lists[i] != NULL) {
       if (buddy_split_block(i) == SUCCESS) {
         /* Try again with the newly split blocks */
+        spin_unlock(&buddy_alloc_lock);
         return buddy_alloc_pages(order);
       }
     }
   }
+
+  spin_unlock(&buddy_alloc_lock);
 
   return NULL;
 }
@@ -119,8 +134,9 @@ void buddy_free_pages(struct Page *page) {
   u32 order = page->order;
   struct Page *buddy = get_buddy_page(page, order);
 
-  /* Check if buddy exists and is free */
-  if (buddy && buddy->is_free && buddy->order == order) {
+  spin_lock(&buddy_alloc_lock);
+
+  while (buddy && buddy->is_free && buddy->order == order) {
     /* Remove buddy from free list */
     struct Page **pp = &free_lists[order];
     while (*pp && *pp != buddy) {
@@ -131,17 +147,17 @@ void buddy_free_pages(struct Page *page) {
     }
 
     /* Determine which page is the lower address */
-    struct Page *coalesced = (page < buddy) ? page : buddy;
-    coalesced->order = order + 1;
+    page = (page < buddy) ? page : buddy;
+    page->order = order + 1;
 
-    /* Recursively try to merge with the next buddy */
-    buddy_free_pages(coalesced);
-    return;
+    buddy = get_buddy_page(page, page->order);
   }
 
-  /* If no merge possible, add to free list */
+  /* Add the page back to the free list if no merging happens */
   page->next = free_lists[order];
   free_lists[order] = page;
+
+  spin_unlock(&buddy_alloc_lock);
 }
 
 ErrorCode buddy_split_block(u32 order) {
