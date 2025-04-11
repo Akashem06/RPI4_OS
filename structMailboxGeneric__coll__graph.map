@@ -1,0 +1,4 @@
+<map id="MailboxGeneric" name="MailboxGeneric">
+<area shape="rect" id="node1" title="MailboxGeneric is the common template used to interface with videocore. Has a higher level ID to spec..." alt="" coords="5,93,129,119"/>
+<area shape="rect" id="node2" href="$structMailboxTag.html" title="MailboxTag is the general data request format. ID = request type, buffer size for the tag&#39;s data,..." alt="" coords="19,5,115,31"/>
+</map>

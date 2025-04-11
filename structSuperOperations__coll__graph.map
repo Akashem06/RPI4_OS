@@ -1,0 +1,9 @@
+<map id="SuperOperations" name="SuperOperations">
+<area shape="rect" id="node1" title="Superblock operations." alt="" coords="66,5,197,31"/>
+<area shape="rect" id="node5" href="$structSuperblock.html" title="Superblock structure." alt="" coords="240,93,335,119"/>
+<area shape="rect" id="node2" href="$structInode.html" title="Extended inode structure." alt="" coords="90,181,149,207"/>
+<area shape="rect" id="node4" href="$structDentry.html" title="Directory entry cache." alt="" coords="98,269,165,295"/>
+<area shape="rect" id="node3" href="$structInodeOperations.html" title="Inode operations." alt="" coords="5,357,135,383"/>
+<area shape="rect" id="node7" href="$structMount.html" title="Mount point." alt="" coords="256,357,319,383"/>
+<area shape="rect" id="node6" href="$structFilesystemType.html" title="File system type registration." alt="" coords="421,181,543,207"/>
+</map>

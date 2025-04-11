@@ -1,0 +1,8 @@
+<map id="MailboxFBRequest" name="MailboxFBRequest">
+<area shape="rect" id="node1" title=" " alt="" coords="227,196,371,221"/>
+<area shape="rect" id="node2" href="$structMailboxFBSize.html" title=" " alt="" coords="5,93,124,119"/>
+<area shape="rect" id="node3" href="$structMailboxTag.html" title="MailboxTag is the general data request format. ID = request type, buffer size for the tag&#39;s data,..." alt="" coords="242,5,338,31"/>
+<area shape="rect" id="node4" href="$structMailboxFBDepth.html" title=" " alt="" coords="147,93,278,119"/>
+<area shape="rect" id="node5" href="$structMailboxFBBuffer.html" title=" " alt="" coords="302,93,433,119"/>
+<area shape="rect" id="node6" href="$structMailboxFBPitch.html" title=" " alt="" coords="457,93,579,119"/>
+</map>

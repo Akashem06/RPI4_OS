@@ -1,0 +1,26 @@
+var group__BCM2711__Hardware =
+[
+    [ "__io_memory", "group__BCM2711__Hardware.html#ga114b282024827e1f9c2a9d9043f49a89", null ],
+    [ "CORE_CLOCK_SPEED", "group__BCM2711__Hardware.html#gaa907e6135574f66e2fa4d65f47a22b76", null ],
+    [ "PAGE_SIZE", "group__BCM2711__Hardware.html#ga7d467c1d283fdfa1f2081ba1e0d01b6e", null ],
+    [ "PERIPHERAL_BASE_ADDRESS", "group__BCM2711__Hardware.html#gaad74285ea591fb16ce302338c3544cae", null ],
+    [ "cpu_disable_irq", "group__BCM2711__Hardware.html#ga61c27ff86f4b308759873e947e195cbb", null ],
+    [ "cpu_enable_irq", "group__BCM2711__Hardware.html#ga45a75356e59ac94a2d82d734ec809dd6", null ],
+    [ "cpu_wait_for_interrupt", "group__BCM2711__Hardware.html#gaa7f86c25f63e026cfdde4584d4f2bebf", null ],
+    [ "cpu_yield", "group__BCM2711__Hardware.html#gac8ab56f584a4564a2857634283f1ebac", null ],
+    [ "dmb", "group__BCM2711__Hardware.html#ga6dabe8fcff4c8cc05143c4a3a67f5465", null ],
+    [ "dsb", "group__BCM2711__Hardware.html#ga0275f0ad501850e87488e02ff52ba126", null ],
+    [ "get_cpu_id", "group__BCM2711__Hardware.html#ga699bd58190ccf9fe1d1609d9f3da8ff1", null ],
+    [ "isb", "group__BCM2711__Hardware.html#ga9417435bbe0641c12049bbb55ba40d32", null ],
+    [ "read16", "group__BCM2711__Hardware.html#gaa5f7b0b7a8876a771a834d9b25c23e31", null ],
+    [ "read32", "group__BCM2711__Hardware.html#gad281ba333fee8c5b73b0b16f7451595a", null ],
+    [ "read64", "group__BCM2711__Hardware.html#ga33ea371b96123696200567af1f940c91", null ],
+    [ "read8", "group__BCM2711__Hardware.html#ga7a69105299e29146645f91c484f4991e", null ],
+    [ "spin_lock", "group__BCM2711__Hardware.html#ga51c8ee8945c2a3b60745522dbafcac56", null ],
+    [ "spin_unlock", "group__BCM2711__Hardware.html#gab430f21b24489af16e3d4d035d1726c5", null ],
+    [ "wakeup_cpu", "group__BCM2711__Hardware.html#ga56be52f7964ba6aae460d1b12442b5d5", null ],
+    [ "write16", "group__BCM2711__Hardware.html#gac292435f7194a8b55e00a662351660bb", null ],
+    [ "write32", "group__BCM2711__Hardware.html#gaaddc424f7e633685f87f86daf74eef3d", null ],
+    [ "write64", "group__BCM2711__Hardware.html#gaf18deb8cd2ccc21f5240379080fe332f", null ],
+    [ "write8", "group__BCM2711__Hardware.html#ga220a8be565e1be12e844394309556e32", null ]
+];

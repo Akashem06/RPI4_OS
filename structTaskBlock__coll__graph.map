@@ -1,0 +1,4 @@
+<map id="TaskBlock" name="TaskBlock">
+<area shape="rect" id="node1" title="Task Storage struct to track CPU registers, state and process information." alt="" coords="12,93,99,119"/>
+<area shape="rect" id="node2" href="$structCPUContext.html" title="CPU register context to be stored and loaded during context switches." alt="" coords="5,5,105,31"/>
+</map>

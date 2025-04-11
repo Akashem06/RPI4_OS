@@ -1,0 +1,9 @@
+<map id="Dentry" name="Dentry">
+<area shape="rect" id="node1" title="Directory entry cache." alt="" coords="197,5,263,31"/>
+<area shape="rect" id="node3" href="$structInodeOperations.html" title="Inode operations." alt="" coords="5,93,135,119"/>
+<area shape="rect" id="node4" href="$structSuperblock.html" title="Superblock structure." alt="" coords="145,357,240,383"/>
+<area shape="rect" id="node7" href="$structMount.html" title="Mount point." alt="" coords="245,445,308,471"/>
+<area shape="rect" id="node2" href="$structInode.html" title="Extended inode structure." alt="" coords="83,181,142,207"/>
+<area shape="rect" id="node6" href="$structSuperOperations.html" title="Superblock operations." alt="" coords="19,269,150,295"/>
+<area shape="rect" id="node5" href="$structFilesystemType.html" title="File system type registration." alt="" coords="6,445,129,471"/>
+</map>
