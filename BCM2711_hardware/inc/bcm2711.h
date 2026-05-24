@@ -21,8 +21,14 @@
  * @{
  */
 
-/** @brief  Peripheral base address */
-#define PERIPHERAL_BASE_ADDRESS 0xFE000000U
+/** @brief  Peripheral base address, single source of truth for the SoC MMIO window */
+#if RPI_VERSION == 3
+#define PERIPHERAL_BASE_ADDRESS 0x3F000000U
+#elif RPI_VERSION == 4
+#define PERIPHERAL_BASE_ADDRESS 0xFE000000U /* Low peripheral mode */
+#else
+#error "NO RPI_VERSION DEFINED"
+#endif
 
 /** @brief  Core clock speed */
 #define CORE_CLOCK_SPEED 1500000000U

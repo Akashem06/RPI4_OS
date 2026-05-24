@@ -20,7 +20,6 @@
 #define SPSR_MASK_ALL               (7 << 6)
 #define SPSR_EL1h                   (5 << 0)
 #define SPSR_VALUE                  (SPSR_MASK_ALL | SPSR_EL1h)
-#define LOW_MEMORY                  0x400000
 
 __code_start:
 _start:
@@ -47,6 +46,15 @@ master:
     b       proc_hang
 
 el3_setup:
+    // If we ever enter at EL3 (real HW via some boot paths), route all banked
+    // SGIs/PPIs to Group 1 so the timer PPI reaches NS EL1 as an IRQ. GICD_IGROUPR
+    // is secure-only, so it must be done here. QEMU -kernel enters at EL2 and skips this.
+    ldr     x0, =0xFF841000      // GICD_BASE
+    mov     w1, #3
+    str     w1, [x0]             // GICD_CTLR = enable Group 0 + Group 1
+    movn    w1, #0
+    str     w1, [x0, #0x080]     // GICD_IGROUPR0 = all Group 1
+
     // Configure EL2
     ldr     x0, =HCR_RW
     msr     hcr_el2, x0
@@ -97,7 +105,8 @@ el1_entry:
 
     msr     SPSel, #1
 
-    ldr     x0, =LOW_MEMORY
+    // Use the linker-reserved stack so the guard page sits between heap and stack
+    ldr     x0, =__stack_top
     mov     sp, x0
 
     dsb sy

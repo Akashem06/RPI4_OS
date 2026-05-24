@@ -49,4 +49,8 @@ static inline u32 mmio_read(__io_memory void *address) {
   return value;
 }
 
+/* Barriered access to a 32 bit register lvalue, e.g. REG_RD(TIMER_REGS->counter_lo) */
+#define REG_RD(reg) mmio_read((__io_memory void *)&(reg))
+#define REG_WR(reg, val) mmio_write((__io_memory void *)&(reg), (u32)(val))
+
 /** @} */

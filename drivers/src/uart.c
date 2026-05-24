@@ -1,21 +1,22 @@
 #include "uart.h"
 
+#include "bcm2711_periph_io.h"
 #include "gpio.h"
 
 UartSettings *config;
 
 bool uart_read_ready() {
-  return !(config->uart->fr & (1 << 4));
+  return !(REG_RD(config->uart->fr) & (1 << 4));
 }
 
 void uart_transmit(char c) {
-  while (config->uart->fr & (1 << 5));  // Wait until TX FIFO is not full
-  config->uart->dr = c;
+  while (REG_RD(config->uart->fr) & (1 << 5));  // Wait until TX FIFO is not full
+  REG_WR(config->uart->dr, c);
 }
 
 char uart_receive() {
-  while (config->uart->fr & (1 << 4));  // Wait until RX FIFO is not empty
-  return config->uart->dr & 0xFF;
+  while (REG_RD(config->uart->fr) & (1 << 4));  // Wait until RX FIFO is not empty
+  return REG_RD(config->uart->dr) & 0xFF;
 }
 
 void uart_transmit_string(char *str) {
@@ -37,27 +38,28 @@ void uart_init(UartSettings *settings) {
     gpio_set_function(32, GF_ALT3);  // TXD0
     gpio_set_function(33, GF_ALT3);  // RXD0
 
-    config->uart->cr = 0;
+    REG_WR(config->uart->cr, 0);
 
     // Clear all interrupts
-    config->uart->icr = 0x7FF;
+    REG_WR(config->uart->icr, 0x7FF);
 
     // Set baud rate
-    config->uart->ibrd = 26;
-    config->uart->fbrd = 3;
+    REG_WR(config->uart->ibrd, 26);
+    REG_WR(config->uart->fbrd, 3);
 
-    settings->uart->ifls &= ~0x3F;     // Clear all FIFO level bits
-    settings->uart->ifls |= (2 << 3);  // RX FIFO trigger at 1/2 full
-    settings->uart->ifls |= (2 << 0);  // TX FIFO trigger at 1/2 empty
+    u32 ifls = REG_RD(config->uart->ifls) & ~0x3F;  // Clear all FIFO level bits
+    ifls |= (2 << 3);                               // RX FIFO trigger at 1/2 full
+    ifls |= (2 << 0);                               // TX FIFO trigger at 1/2 empty
+    REG_WR(config->uart->ifls, ifls);
 
     // 8 bits, no parity, 1 stop bit
-    config->uart->lcrh = (1 << 4) | (1 << 5) | (1 << 6);
+    REG_WR(config->uart->lcrh, (1 << 4) | (1 << 5) | (1 << 6));
 
     // Enable interrupts: RX, TX, and Overrun
-    config->uart->imsc = (1 << 4) | (1 << 5) | (1 << 6) | (1 << 10);
+    REG_WR(config->uart->imsc, (1 << 4) | (1 << 5) | (1 << 6) | (1 << 10));
 
     // Enable UART, TX, RX, CTS, and RTS
-    config->uart->cr = (1 << 0) | (1 << 8) | (1 << 9) | (1 << 11) | (1 << 14) | (1 << 15);
+    REG_WR(config->uart->cr, (1 << 0) | (1 << 8) | (1 << 9) | (1 << 11) | (1 << 14) | (1 << 15));
   } else {
     if (config->uart == UART0) {
       // TODO: Add functionality for pins 36/37. Right now they initalized wrong
@@ -70,7 +72,7 @@ void uart_init(UartSettings *settings) {
     gpio_enable(config->tx);
     gpio_enable(config->rx);
 
-    config->uart->cr = 0;  // Disable UART during setup
+    REG_WR(config->uart->cr, 0);  // Disable UART during setup
 
     // UART Reference Clock Freq = 48MHz
     // baud divisor = UARTCLK / (16 * baud_rate)
@@ -78,11 +80,11 @@ void uart_init(UartSettings *settings) {
     //  integer part = 26
     //  fractional part = (int) ((0.0416666667 * 64) + 0.5) = roughly 3
     // TODO: Add custom calculation. Will likely use an init struct + figure out FPU :(
-    config->uart->ibrd = 26;
-    config->uart->fbrd = 3;
+    REG_WR(config->uart->ibrd, 26);
+    REG_WR(config->uart->fbrd, 3);
 
-    config->uart->lcrh = (1 << 4) | (1 << 5) | (1 << 6);  // 8 bits, no parity, 1 stop bit
-    config->uart->imsc = (1 << 4);                        // Sets RX ISR
-    config->uart->cr = (1 << 0) | (1 << 8) | (1 << 9);    // Enable UART, TX, and RX. TODO: Add more functions? Loopback?
+    REG_WR(config->uart->lcrh, (1 << 4) | (1 << 5) | (1 << 6));  // 8 bits, no parity, 1 stop bit
+    REG_WR(config->uart->imsc, (1 << 4));                        // Sets RX ISR
+    REG_WR(config->uart->cr, (1 << 0) | (1 << 8) | (1 << 9));    // Enable UART, TX, and RX
   }
 }

@@ -111,8 +111,6 @@ void *alloc_header(u32 size) {
 }
 
 ErrorCode slab_init(void) {
-  spin_lock(&slab_alloc_lock);
-
   if (slab_initialized) {
     return SUCCESS;
   }
@@ -123,53 +121,26 @@ ErrorCode slab_init(void) {
     }
   }
 
+  u64 flags = spin_lock_irqsave(&slab_alloc_lock);
+
   for (u32 i = 0; i < SLAB_SIZES; i++) {
     slab_caches[i] = NULL;
   }
 
-  /* Calculate header pool size (5% of memory pool or at least 64KB) */
-  u64 pool_size = get_memory_pool_size();
-  header_pool_size = pool_size / 20;
-  if (header_pool_size < 64 * 1024) {
-    header_pool_size = 64 * 1024;
-  }
-
-  /* Place header pool after mem_map */
-  u32 num_pages = get_num_pages();
-  u64 mem_map_size = num_pages * sizeof(struct Page);
-  header_pool = (void *)((u64)get_mem_map() + mem_map_size);
+  /* Header pool placement/size is owned by page_alloc.c so it stays inside the reserved region */
+  header_pool = get_header_pool();
+  header_pool_size = get_header_pool_size();
   header_pool_used = 0;
 
   slab_initialized = true;
 
-  spin_unlock(&slab_alloc_lock);
+  spin_unlock_irqrestore(&slab_alloc_lock, flags);
 
   return SUCCESS;
 }
 
-void *slab_alloc(u32 size) {
-  if (!slab_initialized) {
-    if (slab_init() != SUCCESS) {
-      return NULL;
-    }
-  }
-
-  spin_lock(&slab_alloc_lock);
-
-  if (size == 0) {
-    return NULL;
-  }
-
-  /* Round up to MIN_SLAB_SIZE alignment */
-  size = (size + MIN_SLAB_SIZE - 1) & ~(MIN_SLAB_SIZE - 1);
-
-  /* Handle direct page allocation for large sizes */
-  if (size > MAX_SLAB_SIZE) {
-    /* This should be handled by kmalloc.c's direct allocation */
-    return NULL;
-  }
-
-  /* Handle slab allocation */
+/* Allocate one object of the rounded size, caller holds the lock */
+static void *slab_alloc_locked(u32 size) {
   u32 index = (size / MIN_SLAB_SIZE) - 1;
 
   /* No slab cache exists for this size yet */
@@ -203,38 +174,61 @@ void *slab_alloc(u32 size) {
   slab->free_list = obj->next_free;
   slab->free_objects--;
 
-  spin_unlock(&slab_alloc_lock);
-
   return (void *)((u64)obj + sizeof(struct SlabObject));
 }
 
-void slab_free(void *ptr) {
-  spin_lock(&slab_alloc_lock);
-
-  if (ptr == NULL) {
-    return;
+void *slab_alloc(u32 size) {
+  if (!slab_initialized) {
+    if (slab_init() != SUCCESS) {
+      return NULL;
+    }
   }
 
-  /* Must be a slab allocation */
+  if (size == 0) {
+    return NULL;
+  }
+
+  /* Round up to MIN_SLAB_SIZE alignment */
+  size = (size + MIN_SLAB_SIZE - 1) & ~(MIN_SLAB_SIZE - 1);
+
+  /* Large sizes are handled by kmalloc.c's direct allocation path */
+  if (size > MAX_SLAB_SIZE) {
+    return NULL;
+  }
+
+  u64 flags = spin_lock_irqsave(&slab_alloc_lock);
+  void *result = slab_alloc_locked(size);
+  spin_unlock_irqrestore(&slab_alloc_lock, flags);
+
+  return result;
+}
+
+/* Return an object to its slab, caller holds the lock */
+static void slab_free_locked(void *ptr) {
   struct SlabObject *obj = (struct SlabObject *)((u64)ptr - sizeof(struct SlabObject));
 
   if (obj->magic != KMALLOC_MAGIC) {
-    /* Invalid or corrupted object */
-    return;
+    return; /* Invalid or corrupted object */
   }
 
-  /* Get the slab */
   struct Slab *slab = obj->parent;
   if (!slab) {
     return;
   }
 
-  /* Return the object to the free list */
   obj->next_free = slab->free_list;
   slab->free_list = obj;
   slab->free_objects++;
 
-  spin_unlock(&slab_alloc_lock);
-
   /* TODO: If slab is entirely free, could return pages to the system */
+}
+
+void slab_free(void *ptr) {
+  if (ptr == NULL) {
+    return;
+  }
+
+  u64 flags = spin_lock_irqsave(&slab_alloc_lock);
+  slab_free_locked(ptr);
+  spin_unlock_irqrestore(&slab_alloc_lock, flags);
 }

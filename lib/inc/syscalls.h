@@ -9,9 +9,11 @@
 
 #ifndef __ASSEMBLER__
 
+#include "common.h"
+
 void call_sys_write(void);
 void call_sys_malloc(void);
-void call_sys_create_task(void);
+void call_sys_create_task(u64 func, u64 arg, u64 stack);
 void call_sys_exit(void);
 
 #endif

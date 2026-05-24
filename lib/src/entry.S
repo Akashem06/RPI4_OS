@@ -303,6 +303,7 @@ cpu_new_task:
     // Move argument and call function
     bl      preempt_enable
     cbz     x19, ret_to_user
+    msr     daifclr, #2          // Kernel thread runs with IRQs enabled so it can be preempted
     mov     x0, x20
     blr     x19
     

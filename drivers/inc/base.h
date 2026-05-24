@@ -1,14 +1,28 @@
 #pragma once
 
-#if RPI_VERSION == 3
-#define PBASE 0x3F000000
+/*******************************************************************************************************************************
+ * @file   base.h
+ *
+ * @brief  Peripheral base address alias for the driver layer
+ *
+ * @date   2024-12-27
+ * @author Aryan Kashem
+ *******************************************************************************************************************************/
 
-// Low peripheral mode address
-#elif RPI_VERSION == 4
-#define PBASE 0xFE000000
+/* Standard library Headers */
 
-#else
-#define PBASE 0
-#error "NO RPI_VERSION DEFINED"
+/* Inter-component Headers */
+#include "bcm2711.h"
 
-#endif
+/* Intra-component Headers */
+
+/**
+ * @defgroup BCM2711_Drivers BCM2711 Drivers
+ * @brief    Driver layer for the BCM2711 SoC
+ * @{
+ */
+
+/** @brief  PBASE aliases the HAL peripheral base, kept for existing driver headers */
+#define PBASE PERIPHERAL_BASE_ADDRESS
+
+/** @} */

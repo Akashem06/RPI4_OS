@@ -5,7 +5,7 @@
  *
  * @brief  File system global definitions
  *
- * @date   2024-12-27
+ * @date   2025-04-06
  * @author Aryan Kashem
  *******************************************************************************************************************************/
 
@@ -20,6 +20,7 @@
 
 /**
  * @defgroup FileSystem File system interface
+ * @brief    OS File system
  * @{
  */
 

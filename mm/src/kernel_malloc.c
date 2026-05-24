@@ -167,12 +167,12 @@ static void direct_free(void *ptr) {
   remove_direct_alloc(ptr);
 }
 
-static ErrorCode kmalloc_init(void) {
+static inline ErrorCode kmalloc_init(void) {
   if (kmalloc_initialized) {
     return SUCCESS;
   }
 
-  spin_lock(&kmalloc_lock);
+  u64 flags = spin_lock_irqsave(&kmalloc_lock);
 
   for (u32 i = 0; i < DIRECT_ALLOC_HASH_SIZE; i++) {
     direct_alloc_hash[i] = NULL;
@@ -180,9 +180,26 @@ static ErrorCode kmalloc_init(void) {
 
   kmalloc_initialized = true;
 
-  spin_unlock(&kmalloc_lock);
+  spin_unlock_irqrestore(&kmalloc_lock, flags);
 
   return SUCCESS;
+}
+
+void kalloc_init() {
+  if (!is_mm_initialized()) {
+    if (mm_init(NULL, 0) != SUCCESS) {
+      return;
+    }
+  }
+
+  if (!kmalloc_initialized) {
+    if (kmalloc_init() != SUCCESS) {
+      return;
+    }
+  }
+
+  slab_init();
+  buddy_init();
 }
 
 void *kmalloc(size_t size) {
@@ -198,7 +215,7 @@ void *kmalloc(size_t size) {
     }
   }
 
-  spin_lock(&kmalloc_lock);
+  u64 flags = spin_lock_irqsave(&kmalloc_lock);
 
   void *result = NULL;
 
@@ -208,7 +225,7 @@ void *kmalloc(size_t size) {
     result = slab_alloc(size);
   }
 
-  spin_unlock(&kmalloc_lock);
+  spin_unlock_irqrestore(&kmalloc_lock, flags);
 
   return result;
 }
@@ -218,7 +235,7 @@ void kfree(void *ptr) {
     return;
   }
 
-  spin_lock(&kmalloc_lock);
+  u64 flags = spin_lock_irqsave(&kmalloc_lock);
 
   struct DirectAllocMap *map = find_direct_alloc(ptr);
   if (map) {
@@ -227,19 +244,16 @@ void kfree(void *ptr) {
     slab_free(ptr);
   }
 
-  spin_unlock(&kmalloc_lock);
+  spin_unlock_irqrestore(&kmalloc_lock, flags);
 }
 
 void *kzalloc(size_t size) {
   void *ptr = kmalloc(size);
 
-  spin_lock(&kmalloc_lock);
-
+  /* memzero operates on memory owned by this caller, no allocator lock needed */
   if (ptr) {
     memzero((u64)ptr, size);
   }
-
-  spin_unlock(&kmalloc_lock);
 
   return ptr;
 }

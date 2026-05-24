@@ -58,4 +58,6 @@ void buddy_free_pages(struct Page *page);
  */
 ErrorCode buddy_split_block(u32 order);
 
+void buddy_kdebug_info();
+
 /** @} */

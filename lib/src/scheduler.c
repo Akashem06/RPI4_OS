@@ -3,6 +3,8 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#include "arm_generic_timer.h"
+#include "bcm2711_gic.h"
 #include "entry.h"
 #include "irq.h"
 #include "log.h"
@@ -10,6 +12,8 @@
 #include "mem_utils.h"
 #include "sysregs.h"
 #include "timer.h"
+
+#define SCHED_TICK_HZ 100  // Preemption tick frequency
 
 struct TaskBlock init_task = INIT_TASK;
 static bool is_initialized = false;
@@ -145,49 +149,51 @@ void scheduler_tick_handler() {
   if (!current) {
     return;
   }
-  volatile u64 flags = 0;
-  irq_save_flags(flags);
+
+  u64 flags = irq_save_flags();
+  irq_disable();
+
   if (--current->counter > 0 || current->preempt_count > 0) {
     irq_restore_flags(flags);
     return;
   }
-  irq_disable();
 
   current->counter = 0;
   _schedule();
+
   irq_restore_flags(flags);
-  irq_enable();
 }
 
 void scheduler_init() {
-  current = (struct TaskBlock *)get_free_page();
+  /* init_task is task[0], the always-runnable idle thread, it runs the kernel idle loop */
   current = &init_task;
+  current->state = TASK_RUNNING;
   task[0] = current;
 
   num_tasks = 1;
 
-  timer_init(3, (CLOCK_HZ / 10), scheduler_tick_handler);
+  /* Preemption tick via the ARM generic timer routed through the GIC */
+  gic_enable_irq(GENERIC_TIMER_PPI, 0);
+  generic_timer_init(SCHED_TICK_HZ);
 
   is_initialized = true;
 }
 
-int scheduler_create_task(u64 clone_flags, u64 func, u64 arg, long priority) {
+ErrorCode scheduler_create_task(u64 clone_flags, u64 func, u64 arg, long priority) {
   if (is_initialized == false) {
-    return 1;
+    return ERR_SYS_INVALID_OP;
   }
   if (num_tasks >= NUM_TASKS) {
-    return 2;
+    return ERR_GEN_NO_MEMORY;
   }
 
   preempt_disable();
   struct TaskBlock *p;
 
   p = (struct TaskBlock *)get_free_page();
-  if (!p) return 3;
-
-  if ((unsigned long)p < LOW_MEMORY || (unsigned long)p >= HIGH_MEMORY) {
+  if (!p) {
     preempt_enable();
-    return 4;
+    return ERR_MEM_OUT_OF_MEMORY;
   }
 
   ProcessStateRegisters *childregs = get_current_pstate(p);
@@ -205,6 +211,7 @@ int scheduler_create_task(u64 clone_flags, u64 func, u64 arg, long priority) {
     // p->stack = stack;
   }
 
+  priority = clamp_priority(priority);
   p->state = TASK_RUNNING;
   p->priority = priority;
   p->counter = priority;
@@ -221,7 +228,7 @@ int scheduler_create_task(u64 clone_flags, u64 func, u64 arg, long priority) {
   u8 pid = num_tasks++;
   task[pid] = p;
   preempt_enable();
-  return 0;
+  return SUCCESS;
 }
 
 int move_task_to_user_mode(u64 func) {
