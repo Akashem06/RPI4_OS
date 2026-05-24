@@ -1,8 +1,11 @@
 #include "kernel.h"
+#include "bcm2711_gic.h"
+#include "irq.h"
 #include "kernel_malloc.h"
 #include "log.h"
 #include "mem_utils.h"
 #include "mini_uart.h"
+#include "scheduler.h"
 #include "utils.h"
 
 #define STRESS_ALLOCS 10
@@ -226,12 +229,37 @@ void test_struct_allocations() {
   log("Struct allocations test complete\n\r");
 }
 
+// Runs the allocator test suite once at boot
+void run_allocator_selftest() {
+  log("\n\r===== KERNEL MEMORY ALLOCATOR TEST =====\n\r");
+  log("Starting memory allocator tests...\n\r");
+
+  test_small_allocations();
+  test_medium_allocations();
+  test_large_allocations();
+  test_zero_allocation();
+  test_struct_allocations();
+
+  log("\n\r===== ALL TESTS COMPLETED =====\n\r");
+}
+
+// Demo kernel thread, logs its id then cooperatively yields, never exits so it stays runnable
+static void demo_thread(u64 id) {
+  u32 count = 0;
+  while (1) {
+    log("[thread %d] tick %d\n\r", (int)id, count++);
+    simple_delay(20000000);
+    schedule();  // Yield, also preempted by the timer tick on real hardware
+  }
+}
+
 void kernel_init() {
   uart_init(&settings);
-
   log_init(LOG_MODE_UART);
 
   int el = get_el();
+  kalloc_init();
+  irq_init_vectors();
 
   log("QEMU Test: Kernel booted at EL%d\n\r", el);
 }
@@ -239,37 +267,25 @@ void kernel_init() {
 void kernel_main() {
   kernel_init();
 
-  log("\n\r===== KERNEL MEMORY ALLOCATOR TEST =====\n\r");
+  run_allocator_selftest();
 
-  // Initialize our memory pool
-  log("Starting memory allocator tests...\n\r");
+  // Bring up multitasking. The GIC + generic timer drive preemption on real Pi4
+  // hardware. Under QEMU raspi4b the timer PPI is Group 0 (secure) and the machine
+  // enters at EL2 non-secure with no way to reach EL3, so the tick cannot be
+  // delivered. The demo threads cooperatively yield so multitasking is still visible.
+  log("\n\r===== STARTING SCHEDULER =====\n\r");
+  gic_init();
+  scheduler_init();
 
-  // Test small allocations (slab allocator)
-  test_small_allocations();
-  simple_delay(10000000);
+  // Three demo threads at different priorities to show the timeslice-decay policy
+  scheduler_create_task(PF_KTHREAD, (u64)&demo_thread, 1, 8);
+  scheduler_create_task(PF_KTHREAD, (u64)&demo_thread, 2, 5);
+  scheduler_create_task(PF_KTHREAD, (u64)&demo_thread, 3, 2);
 
-  // Test medium allocations (larger slab sizes)
-  test_medium_allocations();
-  simple_delay(10000000);
+  irq_enable();
 
-  // Test large allocations (direct buddy allocator)
-  test_large_allocations();
-  simple_delay(10000000);
-
-  // Test zeroed allocations
-  test_zero_allocation();
-  simple_delay(10000000);
-
-  // Test struct allocations
-  test_struct_allocations();
-  simple_delay(10000000);
-
-  log("\n\r===== ALL TESTS COMPLETED =====\n\r");
-
-  u32 counter = 0;
+  // init_task idle loop, yields to runnable threads
   while (1) {
-    log("Memory tests completed. Counter: %d\n\r", counter);
-    counter++;
-    simple_delay(50000000);
+    schedule();
   }
 }

@@ -68,7 +68,7 @@ static inline void write32(u64 address, u32 value) {
  * @param   value 8 byte value to be written
  */
 static inline void write64(u64 address, u64 value) {
-  asm volatile("strd %w0, [%1]         \n" /* Store 8 bytes (double) of data */
+  asm volatile("str %x0, [%1]          \n" /* Store 8 bytes of data */
                :                           /* no outputs */
                : "r"(value), "r"(address)
                : "memory");
@@ -126,7 +126,7 @@ static inline u32 read32(u64 address) {
 static inline u64 read64(u64 address) {
   u64 value;
 
-  asm volatile("ldr %w0, [%1]         \n" /* Read 8 bytes (double) of data */
+  asm volatile("ldr %x0, [%1]          \n" /* Read 8 bytes of data */
                : "=r"(value)
                : "r"(address)
                : "memory");
@@ -134,10 +134,10 @@ static inline u64 read64(u64 address) {
   return value;
 }
 
-/* Simple memory mapping function (basic version) */
+/* Peripheral register addresses are already absolute (PBASE + offset), so ioremap is identity */
 static inline __io_memory void *ioremap(u64 physical_address, u64 size) {
   (void)size;
-  return (__io_memory void *)(physical_address + PERIPHERAL_BASE_ADDRESS);
+  return (__io_memory void *)physical_address;
 }
 
 /** @} */

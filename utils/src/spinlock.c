@@ -14,10 +14,4 @@
 /* Intra-component Headers */
 #include "spinlock.h"
 
-#ifdef ARCH_ARM64
-#include "arm64_spinlock.h"
-#elif defined(ARCH_X86)
-#include "x86_spinlock.h"
-#else
-#error "Unsupported architecture"
-#endif
+/* spin_lock() / spin_unlock() are static inline in the arch header pulled in by spinlock.h */

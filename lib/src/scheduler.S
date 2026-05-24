@@ -27,9 +27,8 @@ cpu_context_switch:
 	ldp	x27, x28, [x8], #16
 	ldp	x29, x9, [x8], #16
 	ldr	x30, [x8]
-    msr daif, x10  
+    msr daif, x10        // Restore the caller's interrupt mask state
 	mov	sp, x9
-	msr daifclr, #2
 	ret
 
 .globl get_cpu_new_task_addr

@@ -23,11 +23,13 @@
  * @{
  */
 
+/* Included via spinlock.h, primitives are static inline so each TU gets its own copy */
+
 /**
  * @brief   Lock the spinlock
  * @param   lock Pointer to a spinlock struct
  */
-void spin_lock(struct Spinlock *lock) {
+static inline void spin_lock(struct Spinlock *lock) {
   u64 temp;
 
   asm volatile(
@@ -47,11 +49,38 @@ void spin_lock(struct Spinlock *lock) {
  * @brief   Unlock the spinlock
  * @param   lock Pointer to a spinlock struct
  */
-void spin_unlock(struct Spinlock *lock) {
+static inline void spin_unlock(struct Spinlock *lock) {
   dmb();
 
   asm volatile("stlr    wzr, [%0]     \n" /* Ensures everything is completed before setting the lock to 0 */
                :
                : "r"(&lock->lock)
                : "memory");
+}
+
+/**
+ * @brief   Save DAIF, mask IRQs, then take the lock
+ * @param   lock Pointer to a spinlock struct
+ * @return  Saved DAIF to pass to spin_unlock_irqrestore
+ */
+static inline u64 spin_lock_irqsave(struct Spinlock *lock) {
+  u64 flags;
+
+  asm volatile("mrs %0, daif    \n" : "=r"(flags));
+  asm volatile("msr daifset, #2 \n" ::: "memory"); /* Mask IRQs */
+
+  spin_lock(lock);
+
+  return flags;
+}
+
+/**
+ * @brief   Release the lock then restore DAIF
+ * @param   lock  Pointer to a spinlock struct
+ * @param   flags DAIF returned by spin_lock_irqsave
+ */
+static inline void spin_unlock_irqrestore(struct Spinlock *lock, u64 flags) {
+  spin_unlock(lock);
+
+  asm volatile("msr daif, %0    \n" ::"r"(flags) : "memory");
 }

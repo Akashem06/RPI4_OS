@@ -32,16 +32,13 @@ struct Spinlock {
 
 #define SPIN_LOCK_INIT {0U}
 
-/**
- * @brief   Lock the spinlock (architecture-specific implementation)
- * @param   lock Pointer to a spinlock struct
- */
-void spin_lock(struct Spinlock *lock);
-
-/**
- * @brief   Unlock the spinlock (architecture-specific implementation)
- * @param   lock Pointer to a spinlock struct
- */
-void spin_unlock(struct Spinlock *lock);
+/* spin_lock() / spin_unlock() come from the arch header below */
+#ifdef ARCH_ARM64
+#include "arm64_spinlock.h"
+#elif defined(ARCH_X86)
+#include "x86_spinlock.h"
+#else
+#error "Unsupported architecture: define ARCH_ARM64 or ARCH_X86"
+#endif
 
 /** @} */

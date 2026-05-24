@@ -79,6 +79,6 @@ typedef struct arm_irq_regs_rpi4 IRQRegisters;
 void irq_init_vectors();
 void irq_enable();
 void irq_disable();
-void irq_save_flags(u64 flags);
-void irq_restore_flags(u64 flags);
+u64 irq_save_flags(void);          // Returns current DAIF
+void irq_restore_flags(u64 flags); // Restores DAIF saved by irq_save_flags
 void enable_interrupt_controller();

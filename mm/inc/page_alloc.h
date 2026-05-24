@@ -93,6 +93,25 @@ struct Page *get_mem_map(void);
 u32 get_num_pages(void);
 
 /**
+ * @brief   Get a pointer to the metadata header pool
+ * @return  Pointer to the header pool used for slab/kmalloc metadata
+ */
+void *get_header_pool(void);
+
+/**
+ * @brief   Get the size of the metadata header pool
+ * @return  Size of the header pool in bytes
+ */
+u64 get_header_pool_size(void);
+
+/**
+ * @brief   Get the number of pages reserved for metadata
+ * @details Covers mem_map and the header pool, the buddy allocator starts after these
+ * @return  Number of reserved pages at the start of the pool
+ */
+u32 get_pages_reserved(void);
+
+/**
  * @brief   Get the initialization status of the memory manager
  * @return  TRUE if memory manager is initialized
  *          FALSE if memory manager is not initialized
@@ -107,7 +126,7 @@ bool is_mm_initialized(void);
  * @param   size Size of the memory pool
  * @return  SUCCESS if initialized succesfully
  *          ERR_GEN_INVALID_PARAM if the size is too small
- *          ERR_MEM_OUT_OF_MEMORY if the memory map is larger than a quarter of the pool
+ *          ERR_MEM_OUT_OF_MEMORY if metadata (mem_map + header pool) is half the pool or more
  */
 ErrorCode mm_init(void *pool, u64 size);
 

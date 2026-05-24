@@ -26,6 +26,7 @@
 
 #ifndef __ASSEMBLER__
 #include "common.h"
+#include "error.h"
 
 /** @brief  Size allocated for Task */
 #define TASK_SIZE 4096
@@ -104,7 +105,7 @@ void preempt_enable(void);
 void switch_to(struct TaskBlock *next);
 
 extern u64 get_cpu_new_task_addr(void);
-int scheduler_create_task(u64 clone_flags, u64 func, u64 arg, long priority);
+ErrorCode scheduler_create_task(u64 clone_flags, u64 func, u64 arg, long priority);
 int move_task_to_user_mode(u64 func);
 void scheduler_exit_task();
 ProcessStateRegisters *get_current_pstate(struct TaskBlock *task);

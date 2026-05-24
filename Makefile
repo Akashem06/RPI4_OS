@@ -15,7 +15,7 @@ QEMU_FLAGS 	:= -M raspi4b -cpu cortex-a72 -smp 4 -m 2G -kernel $(BUILD_DIR)/kern
 
 # Compiler and linker flags
 WARNINGS     := -Wall -Wextra -Werror -Wno-unused-function -Wno-unused-variable -Wno-unused-parameter
-COMMON_FLAGS := -DRPI_VERSION=$(RPI_VERSION) $(WARNINGS) -nostdlib -nostartfiles -ffreestanding -mgeneral-regs-only -march=armv8-a -g -O0
+COMMON_FLAGS := -DRPI_VERSION=$(RPI_VERSION) -DARCH_ARM64 $(WARNINGS) -nostdlib -nostartfiles -ffreestanding -mgeneral-regs-only -march=armv8-a -g -O0
 C_FLAGS      := $(COMMON_FLAGS) $(addprefix -I,$(INC_DIRS))
 ASM_FLAGS    := $(COMMON_FLAGS) $(addprefix -I,$(INC_DIRS))
 LD_FLAGS     := 

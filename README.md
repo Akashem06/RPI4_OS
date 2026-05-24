@@ -6,6 +6,8 @@ Adapted for RPI3/RPI4
 
 Includes a custom bluetooth host stack written by me. Can be found in this repo: https://github.com/Akashem06/RPI_Bluetooth
 
+General operating system textbook I used to learn (Case study on Linux): https://csc-knu.github.io/sys-prog/books/Andrew%20S.%20Tanenbaum%20-%20Modern%20Operating%20Systems.pdf
+
 # Getting Started
 Install tools in either WSL or Linux
 

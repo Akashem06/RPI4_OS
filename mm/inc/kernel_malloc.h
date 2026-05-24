@@ -26,6 +26,8 @@
  * @{
  */
 
+void kalloc_init();
+
 /**
  * @brief   Allocate kernel memory
  * @param   size Number of bytes to allocate
