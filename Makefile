@@ -5,9 +5,14 @@ ARMGNU ?= aarch64-linux-gnu
 BUILD_DIR    := build
 OBJ_DIR     := $(BUILD_DIR)/obj
 DEP_DIR     := $(BUILD_DIR)/dep
-SRC_DIRS    := lib/src utils/src drivers/src kernel/src RPI_Bluetooth/src BCM2711_hardware/src mm/src
+SRC_DIRS    := lib/src utils/src drivers/src RPI_Bluetooth/src BCM2711_hardware/src mm/src kernel/src user/examples
 INC_DIRS    := lib/inc utils/inc drivers/inc kernel/inc RPI_Bluetooth/inc BCM2711_hardware/inc mm/inc
 BCM4345C0_DIR := BCM4345C0
+
+# Entry point, exactly one file defining kernel_main. Default is the memory-manager
+# test, override to build another example, e.g.
+#   make APP_SRC=kernel/examples/device_test.c
+APP_SRC     ?= kernel/examples/mem_alloc_test.c
 
 # Simulation in QEMU
 QEMU      	:= qemu-system-aarch64
@@ -20,8 +25,8 @@ C_FLAGS      := $(COMMON_FLAGS) $(addprefix -I,$(INC_DIRS))
 ASM_FLAGS    := $(COMMON_FLAGS) $(addprefix -I,$(INC_DIRS))
 LD_FLAGS     := 
 
-# Find all source files
-C_SRCS   := $(shell find $(SRC_DIRS) -name '*.c')
+# Find all source files, plus the selected entry point
+C_SRCS   := $(shell find $(SRC_DIRS) -name '*.c') $(APP_SRC)
 ASM_SRCS := $(shell find lib/src -name '*.S')
 
 # Generate object file names
@@ -114,6 +119,9 @@ help:
 	@echo "  format     - Format source files using clang-format"
 	@echo "  sim        - Run kernel in QEMU"
 	@echo "  sim-debug  - Run kernel in QEMU with GDB server enabled"
+	@echo ""
+	@echo "Override APP_SRC to build another example instead of the memory-manager test:"
+	@echo "  make APP_SRC=kernel/examples/device_test.c sim"
 
 -include $(DEP_FILES)
 

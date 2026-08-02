@@ -106,6 +106,18 @@ void switch_to(struct TaskBlock *next);
 
 extern u64 get_cpu_new_task_addr(void);
 ErrorCode scheduler_create_task(u64 clone_flags, u64 func, u64 arg, long priority);
+
+/**
+ * @brief   Spawn a task that begins executing at EL0 (user mode)
+ * @details Seeds a fresh task's exception frame so that when it is first
+ *          scheduled, cpu_new_task takes the ret_to_user path and erets into
+ *          @p user_func at EL0 with its own user stack. The program reaches the
+ *          kernel only through the svc syscall interface.
+ * @param   user_func  Address of the EL0 entry function (must exit via call_sys_exit)
+ * @return  SUCCESS on success, error code otherwise
+ */
+ErrorCode scheduler_create_user_task(u64 user_func);
+
 int move_task_to_user_mode(u64 func);
 void scheduler_exit_task();
 ProcessStateRegisters *get_current_pstate(struct TaskBlock *task);

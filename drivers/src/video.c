@@ -1,8 +1,22 @@
-#include "video.h"
+/*******************************************************************************************************************************
+ * @file   video.c
+ *
+ * @brief  Framebuffer / display driver for the BCM2711 SoC
+ *
+ * @date   2024-12-27
+ * @author Aryan Kashem
+ *******************************************************************************************************************************/
 
+/* Standard library Headers */
+
+/* Inter-component Headers */
+#include "device.h"
 #include "log.h"
 #include "mailbox.h"
 #include "timer.h"
+
+/* Intra-component Headers */
+#include "video.h"
 
 static MailboxFBRequest fb_req;
 static DmaChannel *dma;
@@ -246,4 +260,57 @@ void video_draw_str(char *str, u32 pos_x, u32 pos_y) {
 
 void video_set_dma(bool dma) {
   use_dma = dma;
+}
+
+/* Device wrapper, write blits raw pixels, ioctl drives resolution and DMA mode */
+
+static long fb_dev_write(struct Device *dev, const void *buf, u64 len) {
+  (void)dev;
+  u32 max = fb_req.buff.screen_size;
+  u32 count = (len < max) ? (u32)len : max;
+
+  u8 *dst = DRAWBUFFER;
+  const u8 *src = buf;
+  for (u32 i = 0; i < count; i++) {
+    dst[i] = src[i];
+  }
+
+  if (use_dma) {
+    video_dma();
+  }
+  return (long)count;
+}
+
+static ErrorCode fb_dev_ioctl(struct Device *dev, u32 cmd, u64 arg) {
+  (void)dev;
+  switch (cmd) {
+    case FB_IOCTL_SET_RESOLUTION: {
+      if (!arg) {
+        return ERR_GEN_INVALID_PARAM;
+      }
+      FbResolution *res = (FbResolution *)arg;
+      video_set_resolution(res->xres, res->yres, res->bpp);
+      return SUCCESS;
+    }
+    case FB_IOCTL_SET_DMA:
+      video_set_dma(arg != 0);
+      return SUCCESS;
+    default:
+      return ERR_SYS_NOT_SUPPORTED;
+  }
+}
+
+static const struct DeviceOps fb_dev_ops = {
+  .write = fb_dev_write,
+  .ioctl = fb_dev_ioctl,
+};
+
+static struct Device fb_dev = {
+  .name = "fb",
+  .type = DEVICE_TYPE_MISC,
+  .ops = &fb_dev_ops,
+};
+
+ErrorCode video_register_device(void) {
+  return device_register(&fb_dev);
 }

@@ -231,6 +231,54 @@ ErrorCode scheduler_create_task(u64 clone_flags, u64 func, u64 arg, long priorit
   return SUCCESS;
 }
 
+ErrorCode scheduler_create_user_task(u64 user_func) {
+  if (is_initialized == false) {
+    return ERR_SYS_INVALID_OP;
+  }
+  if (num_tasks >= NUM_TASKS) {
+    return ERR_GEN_NO_MEMORY;
+  }
+
+  preempt_disable();
+
+  struct TaskBlock *p = (struct TaskBlock *)get_free_page();
+  if (!p) {
+    preempt_enable();
+    return ERR_MEM_OUT_OF_MEMORY;
+  }
+  memzero((u64)p, sizeof(struct TaskBlock));
+
+  u64 ustack = (u64)get_free_page();
+  if (!ustack) {
+    free_page((u64)p);
+    preempt_enable();
+    return ERR_MEM_OUT_OF_MEMORY;
+  }
+
+  /* Seed the exception frame at the top of the task page, cpu_new_task will eret into it */
+  ProcessStateRegisters *regs = get_current_pstate(p);
+  memzero((u64)regs, sizeof(*regs));
+  regs->pc = user_func;
+  regs->pstate = PSR_MODE_EL0t;
+  regs->sp = ustack + PAGE_SIZE;
+  p->stack = ustack;
+
+  /* x19 == 0 makes cpu_new_task take the ret_to_user path, sp must land on the frame */
+  p->cpu_context.x19 = 0;
+  p->cpu_context.lr = get_cpu_new_task_addr();
+  p->cpu_context.sp = (u64)regs + 16;
+
+  p->state = TASK_RUNNING;
+  p->priority = DEFAULT_PRIORITY;
+  p->counter = DEFAULT_PRIORITY;
+  p->preempt_count = 1;
+
+  u8 pid = num_tasks++;
+  task[pid] = p;
+  preempt_enable();
+  return SUCCESS;
+}
+
 int move_task_to_user_mode(u64 func) {
   ProcessStateRegisters *regs = get_current_pstate(current);
   memzero((u64)regs, sizeof(*regs));

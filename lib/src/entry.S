@@ -279,6 +279,11 @@ el0_svc:
 	cmp x26, x25
 	b.hs ni_sys
 
+	// Reload syscall args clobbered by kernel_entry (x0/x1 used as scratch)
+	ldp x0, x1, [sp, #16 * 0]
+	ldp x2, x3, [sp, #16 * 1]
+	ldp x4, x5, [sp, #16 * 2]
+
 	ldr	x16, [x27, x26, lsl #3]
 	blr	x16
 	b ret_from_syscall

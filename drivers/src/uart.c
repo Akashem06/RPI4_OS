@@ -1,7 +1,21 @@
-#include "uart.h"
+/*******************************************************************************************************************************
+ * @file   uart.c
+ *
+ * @brief  UART driver for the BCM2711 SoC
+ *
+ * @date   2024-12-27
+ * @author Aryan Kashem
+ *******************************************************************************************************************************/
 
+/* Standard library Headers */
+
+/* Inter-component Headers */
 #include "bcm2711_periph_io.h"
+#include "device.h"
 #include "gpio.h"
+
+/* Intra-component Headers */
+#include "uart.h"
 
 UartSettings *config;
 
@@ -87,4 +101,39 @@ void uart_init(UartSettings *settings) {
     REG_WR(config->uart->imsc, (1 << 4));                        // Sets RX ISR
     REG_WR(config->uart->cr, (1 << 0) | (1 << 8) | (1 << 9));    // Enable UART, TX, and RX
   }
+}
+
+/* Device wrapper, exposes UART0 through the unified device interface */
+
+static long uart_dev_read(struct Device *dev, void *buf, u64 len) {
+  (void)dev;
+  char *out = buf;
+  for (u64 i = 0; i < len; i++) {
+    out[i] = uart_receive();
+  }
+  return (long)len;
+}
+
+static long uart_dev_write(struct Device *dev, const void *buf, u64 len) {
+  (void)dev;
+  const char *in = buf;
+  for (u64 i = 0; i < len; i++) {
+    uart_transmit(in[i]);
+  }
+  return (long)len;
+}
+
+static const struct DeviceOps uart_dev_ops = {
+  .read = uart_dev_read,
+  .write = uart_dev_write,
+};
+
+static struct Device uart0_dev = {
+  .name = "uart0",
+  .type = DEVICE_TYPE_CHAR,
+  .ops = &uart_dev_ops,
+};
+
+ErrorCode uart_register_device(void) {
+  return device_register(&uart0_dev);
 }

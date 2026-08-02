@@ -1,6 +1,20 @@
-#include "gpio.h"
+/*******************************************************************************************************************************
+ * @file   gpio.c
+ *
+ * @brief  GPIO driver for the BCM2711 SoC
+ *
+ * @date   2024-12-27
+ * @author Aryan Kashem
+ *******************************************************************************************************************************/
 
+/* Standard library Headers */
+
+/* Inter-component Headers */
 #include "bcm2711_periph_io.h"
+#include "device.h"
+
+/* Intra-component Headers */
+#include "gpio.h"
 
 void gpio_set_function(u8 pin_number, GpioFunctions func) {
   u8 bit_start = (pin_number * 3) % 30;
@@ -40,4 +54,42 @@ void gpio_set_low(u8 pin_number) {
   } else {
     REG_WR(GPIO_REGS->output_clear.data[1], 1 << (pin_number - 32));
   }
+}
+
+/* Device wrapper, exposes the GPIO block through the unified device interface */
+
+static ErrorCode gpio_dev_ioctl(struct Device *dev, u32 cmd, u64 arg) {
+  (void)dev;
+  u8 pin = arg & 0xFF;
+
+  switch (cmd) {
+    case GPIO_IOCTL_SET_FUNCTION:
+      gpio_set_function(pin, (GpioFunctions)((arg >> 8) & 0xFF));
+      return SUCCESS;
+    case GPIO_IOCTL_ENABLE:
+      gpio_enable(pin);
+      return SUCCESS;
+    case GPIO_IOCTL_SET_HIGH:
+      gpio_set_high(pin);
+      return SUCCESS;
+    case GPIO_IOCTL_SET_LOW:
+      gpio_set_low(pin);
+      return SUCCESS;
+    default:
+      return ERR_SYS_NOT_SUPPORTED;
+  }
+}
+
+static const struct DeviceOps gpio_dev_ops = {
+  .ioctl = gpio_dev_ioctl,
+};
+
+static struct Device gpio_dev = {
+  .name = "gpio",
+  .type = DEVICE_TYPE_MISC,
+  .ops = &gpio_dev_ops,
+};
+
+ErrorCode gpio_register_device(void) {
+  return device_register(&gpio_dev);
 }

@@ -1,8 +1,22 @@
-#include "timer.h"
+/*******************************************************************************************************************************
+ * @file   timer.c
+ *
+ * @brief  System timer driver for the BCM2711 SoC
+ *
+ * @date   2024-12-27
+ * @author Aryan Kashem
+ *******************************************************************************************************************************/
 
+/* Standard library Headers */
+
+/* Inter-component Headers */
 #include "bcm2711_periph_io.h"
+#include "device.h"
 #include "irq.h"
 #include "log.h"
+
+/* Intra-component Headers */
+#include "timer.h"
 
 Timer timers[NUM_TIMERS];
 
@@ -54,4 +68,41 @@ void timer_sleep(u32 ms) {
 
   while (timer_get_ticks() < start + (ms * 1000)) {
   }
+}
+
+/* Device wrapper, exposes the system timer through the unified device interface */
+
+static long timer_dev_read(struct Device *dev, void *buf, u64 len) {
+  (void)dev;
+  if (len < sizeof(u64)) {
+    return ERR_GEN_INVALID_PARAM;
+  }
+  *(u64 *)buf = timer_get_ticks();
+  return sizeof(u64);
+}
+
+static ErrorCode timer_dev_ioctl(struct Device *dev, u32 cmd, u64 arg) {
+  (void)dev;
+  switch (cmd) {
+    case TIMER_IOCTL_SLEEP_MS:
+      timer_sleep((u32)arg);
+      return SUCCESS;
+    default:
+      return ERR_SYS_NOT_SUPPORTED;
+  }
+}
+
+static const struct DeviceOps timer_dev_ops = {
+  .read = timer_dev_read,
+  .ioctl = timer_dev_ioctl,
+};
+
+static struct Device timer_dev = {
+  .name = "timer",
+  .type = DEVICE_TYPE_MISC,
+  .ops = &timer_dev_ops,
+};
+
+ErrorCode timer_register_device(void) {
+  return device_register(&timer_dev);
 }

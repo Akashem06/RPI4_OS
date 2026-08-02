@@ -34,6 +34,36 @@ call_sys_exit:
     svc #0
     ret
 
+.globl call_sys_open
+call_sys_open:
+    mov w8, #SYS_OPEN_NUMBER
+    svc #0
+    ret
+
+.globl call_sys_read
+call_sys_read:
+    mov w8, #SYS_READ_NUMBER
+    svc #0
+    ret
+
+.globl call_sys_write_dev
+call_sys_write_dev:
+    mov w8, #SYS_WRITE_DEV_NUMBER
+    svc #0
+    ret
+
+.globl call_sys_ioctl
+call_sys_ioctl:
+    mov w8, #SYS_IOCTL_NUMBER
+    svc #0
+    ret
+
+.globl call_sys_close
+call_sys_close:
+    mov w8, #SYS_CLOSE_NUMBER
+    svc #0
+    ret
+
 thread_start:
     mov    x29, 0
 

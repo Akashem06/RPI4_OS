@@ -14,6 +14,7 @@
 
 /* Inter-component Headers */
 #include "common.h"
+#include "error.h"
 #include "hardware.h"
 
 /* Intra-component Headers */
@@ -46,36 +47,74 @@ typedef struct {
   reg32 dmacr;       /**< DMA Control Register */
 } UartRegisters;
 
+/**
+ * @brief   UART instance configuration
+ */
 typedef struct {
-  UartRegisters *uart;
-  u32 baudrate;
-  u8 tx;
-  u8 rx;
-  u8 cts;
-  u8 rts;
-  bool bluetooth;
+  UartRegisters *uart; /**< Register block for this UART */
+  u32 baudrate;        /**< Target baud rate */
+  u8 tx;               /**< TX GPIO pin */
+  u8 rx;               /**< RX GPIO pin */
+  u8 cts;              /**< CTS GPIO pin */
+  u8 rts;              /**< RTS GPIO pin */
+  bool bluetooth;      /**< True to wire up the Bluetooth flow control pins */
 } UartSettings;
 
-#define UARTCLK 48000000  // 48 MHz
-#define UART0_BASE (PBASE + 0x201000)
-#define UART2_BASE (PBASE + 0x201400)
-#define UART3_BASE (PBASE + 0x201600)
-#define UART4_BASE (PBASE + 0x201800)
-#define UART5_BASE (PBASE + 0x201A00)
+#define UARTCLK 48000000 /**< UART reference clock, 48 MHz */
 
-#define UART0 ((UartRegisters *)(UART0_BASE))
-#define UART2 ((UartRegisters *)(UART2_BASE))
-#define UART3 ((UartRegisters *)(UART3_BASE))
-#define UART4 ((UartRegisters *)(UART4_BASE))
-#define UART5 ((UartRegisters *)(UART5_BASE))
+#define UART0_BASE (PBASE + 0x201000) /**< PL011 UART0 register base */
+#define UART2_BASE (PBASE + 0x201400) /**< PL011 UART2 register base */
+#define UART3_BASE (PBASE + 0x201600) /**< PL011 UART3 register base */
+#define UART4_BASE (PBASE + 0x201800) /**< PL011 UART4 register base */
+#define UART5_BASE (PBASE + 0x201A00) /**< PL011 UART5 register base */
 
-#define UART_MAX_QUEUE (16 * 1024)
+#define UART0 ((UartRegisters *)(UART0_BASE)) /**< UART0 register block */
+#define UART2 ((UartRegisters *)(UART2_BASE)) /**< UART2 register block */
+#define UART3 ((UartRegisters *)(UART3_BASE)) /**< UART3 register block */
+#define UART4 ((UartRegisters *)(UART4_BASE)) /**< UART4 register block */
+#define UART5 ((UartRegisters *)(UART5_BASE)) /**< UART5 register block */
 
+#define UART_MAX_QUEUE (16 * 1024) /**< Max queued bytes */
+
+/**
+ * @brief   Bring up a UART from the given settings
+ * @param   settings UART instance configuration
+ */
 void uart_init(UartSettings *settings);
+
+/**
+ * @brief   Transmit a single byte, blocking until the TX FIFO has room
+ * @param   c Byte to send
+ */
 void uart_transmit(char c);
+
+/**
+ * @brief   Transmit a null-terminated string, expanding \n to \r\n
+ * @param   str String to send
+ */
 void uart_transmit_string(char *str);
+
+/**
+ * @brief   Receive a single byte, blocking until one arrives
+ * @return  Received byte
+ */
 char uart_receive();
+
+/**
+ * @brief   UART0 receive interrupt handler
+ */
 void handle_uart0_irq();
+
+/**
+ * @brief   Check whether a byte is waiting in the RX FIFO
+ * @return  True if a byte can be read without blocking
+ */
 bool uart_read_ready();
+
+/**
+ * @brief   Register the initialized UART0 as the "uart0" char device
+ * @return  SUCCESS or a negative ErrorCode
+ */
+ErrorCode uart_register_device(void);
 
 /** @} */

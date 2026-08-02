@@ -1,7 +1,21 @@
-#include "mini_uart.h"
+/*******************************************************************************************************************************
+ * @file   mini_uart.c
+ *
+ * @brief  Mini UART (AUX) driver for the BCM2711 SoC
+ *
+ * @date   2024-12-27
+ * @author Aryan Kashem
+ *******************************************************************************************************************************/
 
+/* Standard library Headers */
+
+/* Inter-component Headers */
 #include "bcm2711_periph_io.h"
+#include "device.h"
 #include "gpio.h"
+
+/* Intra-component Headers */
+#include "mini_uart.h"
 
 void mini_uart_transmit(char c) {
   while (!(REG_RD(AUX_REGS->mu_lsr) & 0x20));  // Checks if transmitter empty
@@ -52,4 +66,39 @@ void mini_uart_init() {
   mini_uart_transmit('\r');
   mini_uart_transmit('\r');
   mini_uart_transmit('\n');
+}
+
+/* Device wrapper, exposes the Mini UART through the unified device interface */
+
+static long mini_uart_dev_read(struct Device *dev, void *buf, u64 len) {
+  (void)dev;
+  char *out = buf;
+  for (u64 i = 0; i < len; i++) {
+    out[i] = mini_uart_receive();
+  }
+  return (long)len;
+}
+
+static long mini_uart_dev_write(struct Device *dev, const void *buf, u64 len) {
+  (void)dev;
+  const char *in = buf;
+  for (u64 i = 0; i < len; i++) {
+    mini_uart_transmit(in[i]);
+  }
+  return (long)len;
+}
+
+static const struct DeviceOps mini_uart_dev_ops = {
+  .read = mini_uart_dev_read,
+  .write = mini_uart_dev_write,
+};
+
+static struct Device mini_uart_dev = {
+  .name = "miniuart",
+  .type = DEVICE_TYPE_CHAR,
+  .ops = &mini_uart_dev_ops,
+};
+
+ErrorCode mini_uart_register_device(void) {
+  return device_register(&mini_uart_dev);
 }
