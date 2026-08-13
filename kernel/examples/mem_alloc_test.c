@@ -10,11 +10,10 @@
 /* Standard library Headers */
 
 /* Inter-component Headers */
-#include "bcm2711_gic.h"
 #include "irq.h"
 #include "kernel_malloc.h"
 #include "log.h"
-#include "mem_utils.h"
+#include "memops.h"
 #include "scheduler.h"
 
 /* Intra-component Headers */
@@ -267,8 +266,8 @@ void kernel_main() {
   // enters at EL2 non-secure with no way to reach EL3, so the tick cannot be
   // delivered. The demo threads cooperatively yield so multitasking is still visible.
   log("\n\r===== STARTING SCHEDULER =====\n\r");
-  gic_init();
   scheduler_init();
+  scheduler_start_tick(SCHED_TICK_HZ);
 
   // Three demo threads at different priorities to show the timeslice-decay policy
   scheduler_create_task(PF_KTHREAD, (u64)&demo_thread, 1, 8);

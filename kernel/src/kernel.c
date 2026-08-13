@@ -10,6 +10,7 @@
 /* Standard library Headers */
 
 /* Inter-component Headers */
+#include "bcm2711_board.h"
 #include "irq.h"
 #include "kernel_malloc.h"
 #include "log.h"
@@ -32,6 +33,9 @@ void kernel_boot(void) {
 
   kalloc_init();
   irq_init_vectors();
+
+  /* Bring up the board and register its hardware behind the kernel's abstract seams */
+  board_init();
 
   log("QEMU Test: Kernel booted at EL%d\n\r", get_el());
 }

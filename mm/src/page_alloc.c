@@ -11,7 +11,7 @@
 
 /* Inter-component Headers */
 #include "assert.h"
-#include "mem_utils.h"
+#include "memops.h"
 
 /* Intra-component Headers */
 #include "page_alloc.h"

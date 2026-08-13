@@ -11,6 +11,7 @@
 
 /* Inter-component Headers */
 #include "bcm2711_periph_io.h"
+#include "irq_chip.h"
 
 /* Intra-component Headers */
 #include "bcm2711_gic.h"
@@ -67,4 +68,15 @@ u32 gic_acknowledge(void) {
 
 void gic_end(u32 iar) {
   mmio_write((void *)GICC_EOIR, iar);
+}
+
+/* Expose the GIC-400 to the board-agnostic dispatcher as an IrqChip */
+static const struct IrqChip bcm2711_gic_chip = {
+  .acknowledge = gic_acknowledge,
+  .end = gic_end,
+  .enable = gic_enable_irq,
+};
+
+void bcm2711_irq_chip_register(void) {
+  irq_set_chip(&bcm2711_gic_chip);
 }

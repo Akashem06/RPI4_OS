@@ -17,7 +17,7 @@
 #include "dma.h"
 #include "error.h"
 #include "mailbox.h"
-#include "mem_utils.h"
+#include "memops.h"
 
 /* Intra-component Headers */
 

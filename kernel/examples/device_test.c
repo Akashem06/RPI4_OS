@@ -10,7 +10,6 @@
 /* Standard library Headers */
 
 /* Inter-component Headers */
-#include "bcm2711_gic.h"
 #include "device.h"
 #include "gpio.h"
 #include "irq.h"
@@ -94,8 +93,8 @@ void kernel_main() {
   device_demo();
 
   log("\n\r===== STARTING SCHEDULER =====\n\r");
-  gic_init();
   scheduler_init();
+  scheduler_start_tick(SCHED_TICK_HZ);
 
   /* One EL0 user program plus two kernel threads, all multitasking cooperatively */
   scheduler_create_user_task((u64)&user_hello_main);

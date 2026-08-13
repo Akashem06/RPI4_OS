@@ -1,7 +1,7 @@
 #include "kernel.h"
 #include "kernel_malloc.h"
 #include "log.h"
-#include "mem_utils.h"
+#include "memops.h"
 #include "mini_uart.h"
 #include "utils.h"
 

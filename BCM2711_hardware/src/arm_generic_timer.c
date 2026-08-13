@@ -8,9 +8,13 @@
  *******************************************************************************************************************************/
 
 /* Standard library Headers */
+#include <stddef.h>
 
 /* Inter-component Headers */
+#include "bcm2711_gic.h"
 #include "common.h"
+#include "irq_chip.h"
+#include "scheduler.h"
 
 /* Intra-component Headers */
 #include "arm_generic_timer.h"
@@ -31,4 +35,31 @@ void generic_timer_init(u32 hz) {
 
 void generic_timer_rearm(void) {
   asm volatile("msr cntp_tval_el0, %0" ::"r"((u64)timer_interval));
+}
+
+/* Registered IRQ handler, reloads the timer then drives the scheduler tick */
+static void timer_tick_isr(u32 intid, void *ctx) {
+  (void)intid;
+  (void)ctx;
+  generic_timer_rearm();
+  scheduler_tick_handler();
+}
+
+/* SchedTickSource::start, wires the timer PPI into the dispatcher and starts ticking */
+static ErrorCode generic_timer_start(u32 hz) {
+  ErrorCode err = irq_register_handler(GENERIC_TIMER_PPI, timer_tick_isr, NULL);
+  if (err != SUCCESS) {
+    return err;
+  }
+  irq_enable_line(GENERIC_TIMER_PPI, 0);
+  generic_timer_init(hz);
+  return SUCCESS;
+}
+
+static const struct SchedTickSource bcm2711_tick_source = {
+  .start = generic_timer_start,
+};
+
+void bcm2711_tick_source_register(void) {
+  scheduler_set_tick_source(&bcm2711_tick_source);
 }

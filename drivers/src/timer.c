@@ -10,6 +10,7 @@
 /* Standard library Headers */
 
 /* Inter-component Headers */
+#include "bcm2711_irq.h"
 #include "bcm2711_periph_io.h"
 #include "device.h"
 #include "irq.h"

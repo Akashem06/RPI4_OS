@@ -3,20 +3,20 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#include "arm_generic_timer.h"
-#include "bcm2711_gic.h"
+#include "assert.h"
 #include "entry.h"
 #include "irq.h"
 #include "log.h"
-#include "mem.h"
-#include "mem_utils.h"
+#include "memops.h"
+#include "page.h"
 #include "sysregs.h"
 #include "timer.h"
 
-#define SCHED_TICK_HZ 100  // Preemption tick frequency
-
 struct TaskBlock init_task = INIT_TASK;
 static bool is_initialized = false;
+
+/* Board-supplied periodic tick source that drives preemption */
+static const struct SchedTickSource *tick_source = NULL;
 
 __attribute__((aligned(8), section(".data"))) struct TaskBlock *current = NULL;
 __attribute__((aligned(8), section(".data"))) struct TaskBlock *task[NUM_TASKS] = { NULL };
@@ -44,14 +44,12 @@ void preempt_enable(void) {
 
 void switch_to(struct TaskBlock *next) {
   if (current != next) {
+    // A misaligned SP/LR means the task context is corrupt, switching would fault, bail hard
     if ((next->cpu_context.sp & 15) != 0) {
-      log("ERROR: Stack pointer not 16-byte aligned\n");
-      return;
+      BUG("switch_to: task SP not 16-byte aligned");
     }
-
     if ((next->cpu_context.lr & 3) != 0) {
-      log("ERROR: Link register not 4-byte aligned\n");
-      return;
+      BUG("switch_to: task LR not 4-byte aligned");
     }
 
     struct TaskBlock *prev = current;
@@ -114,9 +112,13 @@ static int pick_next_task(void) {
   return (max_counter > 0) ? next : -1;
 }
 
+static void wake_expired_timeouts(void);
+
 void _schedule(void) {
   preempt_disable();
   int next;
+
+  wake_expired_timeouts(); /* promote any timed-out blocked tasks before we pick */
 
   while (1) {
     next = pick_next_task();
@@ -143,6 +145,25 @@ void schedule() {
 
   current->counter = 0;
   _schedule();
+}
+
+/* Wake any timed-out blocked task. IRQ-safe, runs from the scheduling path (see _schedule),
+   so timeouts fire under cooperative scheduling too, not just the (QEMU-absent) timer tick. */
+static void wake_expired_timeouts(void) {
+  u64 flags = irq_save_flags();
+  irq_disable();
+
+  u64 now = timer_get_ticks();
+  for (int i = 0; i < NUM_TASKS; i++) {
+    struct TaskBlock *t = task[i];
+    if (t && t->state == TASK_BLOCKED && t->wake_deadline != 0 && now >= t->wake_deadline) {
+      t->state = TASK_RUNNING;
+      t->wake_deadline = 0;
+      if (t->counter <= 0) t->counter = t->priority;
+    }
+  }
+
+  irq_restore_flags(flags);
 }
 
 void scheduler_tick_handler() {
@@ -172,44 +193,57 @@ void scheduler_init() {
 
   num_tasks = 1;
 
-  /* Preemption tick via the ARM generic timer routed through the GIC */
-  gic_enable_irq(GENERIC_TIMER_PPI, 0);
-  generic_timer_init(SCHED_TICK_HZ);
-
   is_initialized = true;
+}
+
+void scheduler_set_tick_source(const struct SchedTickSource *src) {
+  tick_source = src;
+}
+
+ErrorCode scheduler_start_tick(u32 hz) {
+  if (!tick_source || !tick_source->start) {
+    return ERR_SYS_INVALID_OP;
+  }
+  return tick_source->start(hz);
+}
+
+/* Find a task-table slot, reclaiming a finished (zombie) task's pages if needed */
+static int task_table_alloc_slot(void) {
+  for (int i = 0; i < NUM_TASKS; i++) {
+    if (task[i] == NULL) {
+      return i;
+    }
+  }
+  for (int i = 0; i < NUM_TASKS; i++) {
+    if (task[i] && task[i]->state == TASK_ZOMBIE) {
+      if (task[i]->stack) {
+        free_page(task[i]->stack);
+      }
+      free_page((u64)task[i]);
+      task[i] = NULL;
+      num_tasks--;
+      return i;
+    }
+  }
+  return -1;
 }
 
 ErrorCode scheduler_create_task(u64 clone_flags, u64 func, u64 arg, long priority) {
   if (is_initialized == false) {
     return ERR_SYS_INVALID_OP;
   }
-  if (num_tasks >= NUM_TASKS) {
-    return ERR_GEN_NO_MEMORY;
+  /* Kernel threads only, EL0 tasks go through scheduler_create_user_task */
+  if ((clone_flags & PF_KTHREAD) == 0) {
+    return ERR_SYS_INVALID_OP;
   }
 
   preempt_disable();
-  struct TaskBlock *p;
-
-  p = (struct TaskBlock *)get_free_page();
+  struct TaskBlock *p = (struct TaskBlock *)get_free_page();
   if (!p) {
     preempt_enable();
     return ERR_MEM_OUT_OF_MEMORY;
   }
-
-  ProcessStateRegisters *childregs = get_current_pstate(p);
-  memzero((u64)childregs, sizeof(ProcessStateRegisters));
-  memzero((u64)p, sizeof(struct TaskBlock));
-
-  if (clone_flags & PF_KTHREAD) {
-    p->cpu_context.x19 = func;
-    p->cpu_context.x20 = arg;
-  } else {
-    ProcessStateRegisters *cur_regs = get_current_pstate(current);
-    *childregs = *cur_regs;
-    childregs->regs[0] = 0;
-    // childregs->sp = stack + PAGE_SIZE;
-    // p->stack = stack;
-  }
+  memzero((u64)p, TASK_SIZE);
 
   priority = clamp_priority(priority);
   p->state = TASK_RUNNING;
@@ -217,16 +251,20 @@ ErrorCode scheduler_create_task(u64 clone_flags, u64 func, u64 arg, long priorit
   p->counter = priority;
   p->preempt_count = 1;
 
-  // Get the actual runtime address of cpu_new_task
-  u64 new_task_addr = get_cpu_new_task_addr();
-
+  /* cpu_new_task consumes x19/x20 as the entry function and its argument */
   p->cpu_context.x19 = func;
   p->cpu_context.x20 = arg;
   p->cpu_context.sp = ((u64)p + TASK_SIZE) & ~15ULL;
-  p->cpu_context.lr = new_task_addr;
+  p->cpu_context.lr = get_cpu_new_task_addr();
 
-  u8 pid = num_tasks++;
-  task[pid] = p;
+  int slot = task_table_alloc_slot();
+  if (slot < 0) {
+    free_page((u64)p);
+    preempt_enable();
+    return ERR_GEN_NO_MEMORY;
+  }
+  task[slot] = p;
+  num_tasks++;
   preempt_enable();
   return SUCCESS;
 }
@@ -234,9 +272,6 @@ ErrorCode scheduler_create_task(u64 clone_flags, u64 func, u64 arg, long priorit
 ErrorCode scheduler_create_user_task(u64 user_func) {
   if (is_initialized == false) {
     return ERR_SYS_INVALID_OP;
-  }
-  if (num_tasks >= NUM_TASKS) {
-    return ERR_GEN_NO_MEMORY;
   }
 
   preempt_disable();
@@ -246,7 +281,7 @@ ErrorCode scheduler_create_user_task(u64 user_func) {
     preempt_enable();
     return ERR_MEM_OUT_OF_MEMORY;
   }
-  memzero((u64)p, sizeof(struct TaskBlock));
+  memzero((u64)p, TASK_SIZE);
 
   u64 ustack = (u64)get_free_page();
   if (!ustack) {
@@ -257,7 +292,6 @@ ErrorCode scheduler_create_user_task(u64 user_func) {
 
   /* Seed the exception frame at the top of the task page, cpu_new_task will eret into it */
   ProcessStateRegisters *regs = get_current_pstate(p);
-  memzero((u64)regs, sizeof(*regs));
   regs->pc = user_func;
   regs->pstate = PSR_MODE_EL0t;
   regs->sp = ustack + PAGE_SIZE;
@@ -273,32 +307,17 @@ ErrorCode scheduler_create_user_task(u64 user_func) {
   p->counter = DEFAULT_PRIORITY;
   p->preempt_count = 1;
 
-  u8 pid = num_tasks++;
-  task[pid] = p;
+  int slot = task_table_alloc_slot();
+  if (slot < 0) {
+    free_page(ustack);
+    free_page((u64)p);
+    preempt_enable();
+    return ERR_GEN_NO_MEMORY;
+  }
+  task[slot] = p;
+  num_tasks++;
   preempt_enable();
   return SUCCESS;
-}
-
-int move_task_to_user_mode(u64 func) {
-  ProcessStateRegisters *regs = get_current_pstate(current);
-  memzero((u64)regs, sizeof(*regs));
-  // Points to the function that needs to be executed next in user mode.
-  // Kernel_exit will copy PC to the ELR_EL1 register, ensuring that we return to this function
-  regs->pc = func;
-
-  // This is copied to spsr_el1 by kernel_exit and becomes the new state of the processor after
-  // leaving.
-  regs->pstate = PSR_MODE_EL0t;
-
-  // New user stack
-  u64 stack = (u64)get_free_page();
-  if (!stack) {
-    return -1;
-  }
-
-  regs->sp = stack + PAGE_SIZE;
-  current->stack = stack;
-  return 0;
 }
 
 ProcessStateRegisters *get_current_pstate(struct TaskBlock *task) {
@@ -319,4 +338,49 @@ void scheduler_exit_task() {
   }
   preempt_enable();
   schedule();
+}
+
+/* Commit the current task to BLOCKED on chan and yield. IRQs are masked across the switch,
+   mirroring scheduler_tick_handler, and restored to the caller's state once we're woken. */
+static void block_current_on(void *chan, u64 deadline) {
+  u64 flags = irq_save_flags();
+  irq_disable();
+
+  current->wait_channel = chan;
+  current->wake_deadline = deadline;
+  current->state = TASK_BLOCKED;
+  current->counter = 0;
+
+  _schedule(); /* switches away, returns here once we're marked runnable again */
+
+  current->wait_channel = NULL;
+  current->wake_deadline = 0;
+  irq_restore_flags(flags);
+}
+
+void scheduler_block_on(void *chan) {
+  block_current_on(chan, 0);
+}
+
+void scheduler_block_on_timeout(void *chan, u32 timeout_ms) {
+  u64 deadline = timer_get_ticks() + (u64)timeout_ms * (CLOCK_HZ / 1000U);
+  /* 0 is the "no timeout" sentinel, nudge a zero deadline forward so it still fires */
+  if (deadline == 0) deadline = 1;
+  block_current_on(chan, deadline);
+}
+
+void scheduler_wake_chan(void *chan) {
+  u64 flags = irq_save_flags();
+  irq_disable();
+
+  for (int i = 0; i < NUM_TASKS; i++) {
+    struct TaskBlock *t = task[i];
+    if (t && t->state == TASK_BLOCKED && t->wait_channel == chan) {
+      t->state = TASK_RUNNING;
+      t->wake_deadline = 0;
+      if (t->counter <= 0) t->counter = t->priority;
+    }
+  }
+
+  irq_restore_flags(flags);
 }

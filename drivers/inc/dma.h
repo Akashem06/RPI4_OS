@@ -4,8 +4,8 @@
 
 #include "common.h"
 #include "log.h"
-#include "mem.h"
-#include "mem_utils.h"
+#include "bcm2711_bus.h"
+#include "memops.h"
 #include "timer.h"
 
 #define CS_RESET (1 << 31)

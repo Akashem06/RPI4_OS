@@ -14,8 +14,8 @@
 #include "device.h"
 #include "entry.h"
 #include "log.h"
-#include "mem.h"
-#include "mem_utils.h"
+#include "page.h"
+#include "memops.h"
 #include "scheduler.h"
 
 /* Intra-component Headers */

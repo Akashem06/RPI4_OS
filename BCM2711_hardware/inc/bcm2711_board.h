@@ -1,18 +1,17 @@
 #pragma once
 
 /*******************************************************************************************************************************
- * @file   arm_generic_timer.h
+ * @file   bcm2711_board.h
  *
- * @brief  ARMv8 generic timer (CNTP) used as the scheduler preemption tick
+ * @brief  BCM2711 board bring-up, wires concrete hardware into the kernel's abstract seams
  *
- * @date   2026-05-23
+ * @date   2026-08-02
  * @author Aryan Kashem
  *******************************************************************************************************************************/
 
 /* Standard library Headers */
 
 /* Inter-component Headers */
-#include "common.h"
 
 /* Intra-component Headers */
 
@@ -23,19 +22,11 @@
  */
 
 /**
- * @brief   Start the generic timer firing at the given frequency
- * @param   hz Number of ticks per second
+ * @brief   Bring up the board and register its hardware with the kernel core
+ * @details Initializes the GIC, registers it as the IrqChip, and registers the
+ *          generic timer as the scheduler's tick source. Call once at boot before
+ *          starting the scheduler.
  */
-void generic_timer_init(u32 hz);
-
-/**
- * @brief   Reload the timer for the next tick, also deasserts the current one
- */
-void generic_timer_rearm(void);
-
-/**
- * @brief   Register the generic timer as the scheduler's periodic tick source
- */
-void bcm2711_tick_source_register(void);
+void board_init(void);
 
 /** @} */

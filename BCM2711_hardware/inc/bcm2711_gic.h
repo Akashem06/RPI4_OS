@@ -57,4 +57,9 @@ u32 gic_acknowledge(void);
  */
 void gic_end(u32 iar);
 
+/**
+ * @brief   Register the GIC-400 as the board's IrqChip with the generic dispatcher
+ */
+void bcm2711_irq_chip_register(void);
+
 /** @} */

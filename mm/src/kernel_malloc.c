@@ -10,7 +10,7 @@
 /* Standard library Headers */
 
 /* Inter-component Headers */
-#include "mem_utils.h"
+#include "memops.h"
 #include "spinlock.h"
 
 /* Intra-component Headers */

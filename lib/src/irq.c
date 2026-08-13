@@ -1,17 +1,36 @@
+/*******************************************************************************************************************************
+ * @file   irq.c
+ *
+ * @brief  Board-agnostic interrupt dispatch, routes acknowledged IRQs to registered handlers
+ *
+ * @date   2024-12-27
+ * @author Aryan Kashem
+ *******************************************************************************************************************************/
+
+/* Standard library Headers */
+#include <stddef.h>
+
+/* Inter-component Headers */
+#include "log.h"
+
+/* Intra-component Headers */
 #include "irq.h"
 
-#include "arm_generic_timer.h"
-#include "aux_reg.h"
-#include "bcm2711_gic.h"
-#include "bcm2711_periph_io.h"
-#include "entry.h"
-#include "gpio.h"
-#include "log.h"
-#include "mini_uart.h"
-#include "scheduler.h"
-#include "timer.h"
-#include "uart.h"
-#include "utils.h"
+/* GICC_IAR returns an intid >= 1020 when there is nothing pending to claim */
+#define IRQ_SPURIOUS_MIN 1020U
+#define IRQ_INTID_MASK 0x3FFU
+#define MAX_IRQ_HANDLERS 16
+
+static const struct IrqChip *chip = NULL;
+
+struct IrqHandlerSlot {
+  u32 intid;
+  irq_handler_t fn;
+  void *ctx;
+  bool used;
+};
+
+static struct IrqHandlerSlot handlers[MAX_IRQ_HANDLERS];
 
 const char entry_error_messages[17][32] = {
   "SYNC_INVALID_EL1t",   "IRQ_INVALID_EL1t",   "FIQ_INVALID_EL1t",   "ERROR_INVALID_EL1T",
@@ -27,55 +46,65 @@ const char entry_error_messages[17][32] = {
 
 void show_invalid_entry_message(u32 type, u64 esr, u64 address, u64 fault_addr_reg, u64 stack_pointer) {
   log("ERROR CAUGHT: %s - %d. ESR: %d Address: %d\r\n", entry_error_messages[type], type, esr, address);
-  for (int i = 0; i < CLOCK_HZ; i++) {
-    __asm("NOP");
-  }
   log("Fault addr_reg: %d, stack pointer: %d\r\n", fault_addr_reg, stack_pointer);
 }
 
 void print_register(u64 reg_val, u64 reg_num) {
   log("REG_NUMBER: %d, VALUE: %d\n\r", reg_num, reg_val);
-  for (int i = 0; i < CLOCK_HZ; i++) {
-    __asm("NOP");
+}
+
+void irq_set_chip(const struct IrqChip *new_chip) {
+  chip = new_chip;
+}
+
+void irq_enable_line(u32 intid, u8 prio) {
+  if (chip && chip->enable) {
+    chip->enable(intid, prio);
   }
 }
 
-void enable_interrupt_controller() {
-#if RPI_VERSION == 4
-  REG_WR(IRQ_REGS->irq0_disable_0, 0xFFFFFFFF);
-  REG_WR(IRQ_REGS->irq0_disable_1, 0xFFFFFFFF);
-  REG_WR(IRQ_REGS->irq0_disable_2, 0xFFFFFFFF);
-
-  // Enable basic GPU0 interrupts
-  REG_WR(IRQ_REGS->irq0_enable_0, IRQ_TIMER_0 | IRQ_TIMER_1 | IRQ_TIMER_2 | IRQ_TIMER_3 | IRQ_CODEC_0 | IRQ_CODEC_1 |
-                                    IRQ_CODEC_2 | IRQ_JPEG | IRQ_ISP | IRQ_USB | IRQ_3D | IRQ_DMA_0 | IRQ_AUX);
-
-  // Enable GPU1 interrupts
-  REG_WR(IRQ_REGS->irq0_enable_1, IRQ_I2C_SPI_SLV | IRQ_PWA0 | IRQ_PWA1 | IRQ_SMI | IRQ_GPIO_0 | IRQ_GPIO_1 | IRQ_GPIO_2 |
-                                    IRQ_GPIO_3 | IRQ_I2C | IRQ_SPI | IRQ_PCM | IRQ_UART_0 | IRQ_UART_2 | IRQ_UART_3 |
-                                    IRQ_UART_4 | IRQ_UART_5);
-#elif RPI_VERSION == 3
-  REG_WR(IRQ_REGS->irq0_enable_1, REG_RD(IRQ_REGS->irq0_enable_1) | AUX_IRQ);
-#endif
+ErrorCode irq_register_handler(u32 intid, irq_handler_t fn, void *ctx) {
+  for (int i = 0; i < MAX_IRQ_HANDLERS; i++) {
+    if (!handlers[i].used) {
+      handlers[i].intid = intid;
+      handlers[i].fn = fn;
+      handlers[i].ctx = ctx;
+      handlers[i].used = true;
+      return SUCCESS;
+    }
+  }
+  return ERR_GEN_NO_MEMORY;
 }
 
-void handle_irq() {
-  u32 iar = gic_acknowledge();
-  u32 intid = iar & 0x3FFU;
+static irq_handler_t lookup_handler(u32 intid, void **ctx) {
+  for (int i = 0; i < MAX_IRQ_HANDLERS; i++) {
+    if (handlers[i].used && handlers[i].intid == intid) {
+      *ctx = handlers[i].ctx;
+      return handlers[i].fn;
+    }
+  }
+  return NULL;
+}
 
-  // Spurious interrupt, nothing pending
-  if (intid >= 1020U) {
+void handle_irq(void) {
+  if (!chip) {
     return;
   }
 
-  if (intid == GENERIC_TIMER_PPI) {
-    // Rearm and EOI before scheduling, a switch to a fresh task may not return here
-    generic_timer_rearm();
-    gic_end(iar);
-    scheduler_tick_handler();
+  u32 iar = chip->acknowledge();
+  u32 intid = iar & IRQ_INTID_MASK;
+
+  // Spurious interrupt, nothing was pending
+  if (intid >= IRQ_SPURIOUS_MIN) {
     return;
   }
 
-  // Unhandled interrupt, acknowledge it so the GIC does not wedge
-  gic_end(iar);
+  // EOI before dispatch, a handler may context-switch and never return here
+  chip->end(iar);
+
+  void *ctx = NULL;
+  irq_handler_t fn = lookup_handler(intid, &ctx);
+  if (fn) {
+    fn(intid, ctx);
+  }
 }

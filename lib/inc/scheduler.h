@@ -75,6 +75,9 @@ struct TaskBlock {
 
   unsigned long stack;
   unsigned long flags;
+
+  void *wait_channel;  /* non-NULL while blocked on a channel (see scheduler_block_on) */
+  u64 wake_deadline;   /* timer tick to auto-wake a timed block, 0 = no timeout */
 };
 
 typedef struct {
@@ -90,16 +93,67 @@ typedef struct {
 #define MIN_TIMESLICE 2
 #define STARVATION_LIMIT 100
 
+/** @brief  Default preemption tick frequency (Hz) */
+#define SCHED_TICK_HZ 100
+
 /**
- * @brief   Initialize the task scheduler
+ * @brief   Periodic tick source, supplied by the board (e.g. the ARM generic timer)
+ */
+struct SchedTickSource {
+  ErrorCode (*start)(u32 hz); /**< Begin delivering scheduler ticks at @p hz */
+};
+
+/**
+ * @brief   Initialize the task scheduler (task table only, no hardware)
  */
 extern void scheduler_init(void);
+
+/**
+ * @brief   Register the board's periodic tick source for preemption
+ * @param   src Ops table whose start() enables the tick, must outlive use
+ */
+void scheduler_set_tick_source(const struct SchedTickSource *src);
+
+/**
+ * @brief   Start preemption ticks through the registered tick source
+ * @param   hz Ticks per second
+ * @return  SUCCESS, or an error if no tick source has been registered
+ */
+ErrorCode scheduler_start_tick(u32 hz);
 
 /**
  * @brief
  */
 void schedule(void);
 extern void scheduler_tick_handler(void);
+
+/**
+ * @brief   Block the current task on a wait channel until woken
+ * @details Sets the task BLOCKED with @p chan as its wait channel and yields the CPU.
+ *          Returns once scheduler_wake_chan(chan) marks it runnable again. The caller is
+ *          responsible for closing the lost-wakeup window (test its condition and commit to
+ *          blocking under a spinlock/IRQ guard, then re-test after this returns).
+ * @param   chan Opaque channel address, usually the object being waited on
+ */
+void scheduler_block_on(void *chan);
+
+/**
+ * @brief   Block the current task on a channel with a timeout
+ * @details Like scheduler_block_on, but the scheduler tick also wakes the task once
+ *          @p timeout_ms has elapsed even if nobody signals the channel. The caller re-tests
+ *          its condition on return to tell a real wake from a timeout.
+ * @param   chan       Opaque channel address
+ * @param   timeout_ms Milliseconds after which the task is force-woken
+ */
+void scheduler_block_on_timeout(void *chan, u32 timeout_ms);
+
+/**
+ * @brief   Wake every task currently blocked on a channel
+ * @details IRQ-safe, so it may be called from a worker thread or an ISR. Marks matching tasks
+ *          runnable, the woken tasks re-test their condition themselves.
+ * @param   chan Channel to wake
+ */
+void scheduler_wake_chan(void *chan);
 void preempt_disable(void);
 void preempt_enable(void);
 void switch_to(struct TaskBlock *next);
@@ -118,20 +172,20 @@ ErrorCode scheduler_create_task(u64 clone_flags, u64 func, u64 arg, long priorit
  */
 ErrorCode scheduler_create_user_task(u64 user_func);
 
-int move_task_to_user_mode(u64 func);
 void scheduler_exit_task();
 ProcessStateRegisters *get_current_pstate(struct TaskBlock *task);
 void cpu_context_switch(struct TaskBlock *prev, struct TaskBlock *next);
 
-#define INIT_TASK /* CpuContext */             \
-  {                                            \
-    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, \
-    0, /* state */                             \
-    0, /* counter */                           \
-    1, /* priority */                          \
-    0, /* preempt_count */                     \
-    0, /* stack */                             \
-    0  /* flags */                             \
+#define INIT_TASK /* CpuContext */                                    \
+  {                                                                   \
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, 0, /* state */         \
+        0,                                        /* counter */       \
+        1,                                        /* priority */      \
+        0,                                        /* preempt_count */ \
+        0,                                        /* stack */         \
+        0,                                        /* flags */         \
+        0,                                        /* wait_channel */   \
+        0                                         /* wake_deadline */ \
   }
 
 #endif
